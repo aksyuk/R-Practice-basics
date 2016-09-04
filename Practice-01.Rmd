@@ -1,0 +1,43 @@
+---
+title: "Практика №1"
+author: "Svetlana Aksyuk"
+date: "4 сентября 2016 г."
+graphics: yes
+lang: russian
+header-includes:
+- \renewcommand\rmdefault{cmr}
+- \renewcommand\sfdefault{cmss}
+- \usepackage[russian]{babel}
+- \usepackage{listings}
+geometry: margin=1in
+papersize: a4paper
+fontsize: 14pt
+output:
+   html_document:
+      keep_md: true
+---
+
+```{r, include = FALSE}
+## setup knitr and display options
+library(knitr)
+opts_chunk$set(comment=NA)
+```
+
+# Введение в язык R. Знакомство с R (пакет base)  
+
+*Составитель: С.А. Аксюк, [s.aksuk@kiber-guu.ru](s.aksuk@kiber-guu.ru)*  
+
+*Ключевые слова: [R], project R, проект R*  
+
+*Версия руководства: 3.2*  
+  
+# Условные обозначения  
+
+Код на языке R выделен светло-серым фоном. Результат вывода консоли начинается с двух решёток:  
+
+```{r code-output}
+12 + 30
+```
+
+фыафы  
+
