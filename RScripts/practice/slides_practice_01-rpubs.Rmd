@@ -1,7 +1,7 @@
 ---
 output:
   xaringan::moon_reader:
-    css: ["./css/guu-slides-theme.css"]
+    css: ["default", "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/RScripts/practice/css/guu-slides-theme.css"]
     seal: false
     nature:
       ratio: '16:9'
@@ -15,7 +15,7 @@ library('icon')
 ```
 
 class: inverse, center, middle  
-background-image: url(./images/title_GERB-GUU_16-9.png)
+background-image: url(https://github.com/aksyuk/R-Practice-basics/raw/master/RScripts/practice/images/title_GERB-GUU_16-9.png)
 background-size: cover
 
 ## Практикум на ЭВМ 4
@@ -33,11 +33,11 @@ background-size: cover
 - балльно-рейтинговая система   
 
 .pull-left[.center[
-<img src="./slides_practice_01_files/R.jpg" width="45%">
+<img src="https://github.com/aksyuk/R-Practice-basics/raw/master/RScripts/practice/slides_practice_01_files/R.jpg" width="45%">
 ]]
 
 .pull-right[.center[
-<img src="./slides_practice_01_files/RStudio-Logo-Flat.png" width="100%">
+<img src="https://github.com/aksyuk/R-Practice-basics/raw/master/RScripts/practice/slides_practice_01_files/RStudio-Logo-Flat.png" width="100%">
 ]]
 
 ---
@@ -66,7 +66,7 @@ background-size: cover
 
 В 2017 ‒ 2019 гг. `R` на пятом месте среди инструментов Data Science, данные поисковика работы по всему миру indeed.com   
 
-<img src="./slides_practice_01_files/Fig-1a-IndeedJobs-2019-1.png" width="120%" align = "center">
+<img src="https://github.com/aksyuk/R-Practice-basics/raw/master/RScripts/practice/slides_practice_01_files/Fig-1a-IndeedJobs-2019-1.png" width="120%" align = "center">
 
 <font size = "4px">
 Источник: <a href = "http://r4stats.com/articles/popularity/">The Popularity of Data Science Software, r4stats.com</a>
@@ -76,7 +76,7 @@ background-size: cover
 
 В 2018 гг. `R` на втором месте по использованию в академических исследованиях (упоминания в Google Scholar) 
 
-<img src="./slides_practice_01_files/Fig_2a_ScholarlyImpact2018-1.png" width="120%" align = "center">
+<img src="https://github.com/aksyuk/R-Practice-basics/raw/master/RScripts/practice/slides_practice_01_files/Fig_2a_ScholarlyImpact2018-1.png" width="120%" align = "center">
 
 <font size = "4px">
 Источник: <a href = "http://r4stats.com/articles/popularity/">The Popularity of Data Science Software, r4stats.com</a>
@@ -86,7 +86,7 @@ background-size: cover
 
 На hh.ru количество вакансий с упоминанием `R` в 2018 году выросло на 218% к прошлому году и составило 947.   
 
-<img src="./slides_practice_01_files/ykb2duqixlf_xvguploejrso9qy.png" width="120%" align = "center">
+<img src="https://github.com/aksyuk/R-Practice-basics/raw/master/RScripts/practice/slides_practice_01_files/ykb2duqixlf_xvguploejrso9qy.png" width="120%" align = "center">
 
 <font size = "4px">
 Источник: <a href = "https://habr.com/ru/company/hh/blog/418079/">Наиболее востребованные языки программирования – 2018, habr.com</a>
@@ -371,6 +371,6 @@ RSiteSearch('apply')
 - Приступить к выполнению упражнений 1-4. Номер варианта -- ваш номер в списке группы.   
 
 .center[
-<img src="./slides_practice_01_files/Professortocat_v2.png" width="23%">
+<img src="https://github.com/aksyuk/R-Practice-basics/raw/master/RScripts/practice/slides_practice_01_files/Professortocat_v2.png" width="23%">
 <font size = "4px">image credit: krman009@github.com</font>
 ]
