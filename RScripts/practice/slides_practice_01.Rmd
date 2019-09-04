@@ -362,6 +362,27 @@ lapply(df.2019, mean)
 RSiteSearch('apply')
 ```
 
+больше миллиона вопросов с тегом `[r]` на stackoverflow.com: [stackoverflow.com/questions/tagged/r](https://stackoverflow.com/questions/tagged/r)
+
+---
+
+### Распространённые ошибки
+
+```{r, eval = F}
+с(1, 2, 3, 4)
+```
+`Error in с(1, 2, 3, 4) : could not find function "с"`
+
+```{r}
+df.2019$city
+```
+
+```{r, eval = F}
+sum(df.2019$city)
+```
+
+`Error in sum(df.2019$city) : invalid 'type' (character) of argument`
+
 ---
 
 ### Практическая часть занятия  
