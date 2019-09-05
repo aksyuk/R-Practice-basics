@@ -1,0 +1,370 @@
+---
+output:
+  xaringan::moon_reader:
+    css: ["./css/guu-slides-theme.css"]
+    seal: false
+    nature:
+      ratio: '16:9'
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+library('icon')
+```
+
+class: inverse, center, middle  
+background-image: url(./images/title_GERB-GUU_16-9.png)
+background-size: cover
+
+## Практикум на ЭВМ 4
+
+### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
+
+25 сентября 2019
+
+---
+
+## Базовая графика в `R`    
+
+`r fa_chart_area(color = "#1E8449")` все средства находятся в базовой сборке (`base`);
+
+`r fa_chart_bar(color = "#1E8449")` можно собрать любой статический график с нуля   
+
+`r fa_chart_line(color = "#1E8449")` результат сложно сохранить как объект   
+
+`r fa_image(color = "#1E8449")` вывод на графическое устройство: экран, файл   
+
+`r fa_code(color = "#1E8449")` Чтобы сделать красиво, нужно очень много кода   
+---
+
+## Базовая графика в `R`    
+
+- График собирается “слоями”, предыдущие слои нельзя отменить  
+
+- Начинается с функции высокого уровня: `plot()`, `curve()`, `boxplot()`, `hist()` и др.   
+
+- Элементы добавляются на активный график функциями низкого уровня: `points()`, `abline()`, `axis()`, `text()` и др.  
+
+---
+
+## Пример простого графика `base`   
+
+.pull-left[
+```{r, eval = F}
+plot(mtcars$mpg, 
+   mtcars$hp,
+   pch = 21, 
+   col = mtcars$cyl,
+   bg = mtcars$cyl, 
+   cex = 2)
+```
+- оси пересекаются не в 0  
+- непонятные подписи осей  
+- мелкий текст  
+]
+.pull-right[
+```{r, echo = F}
+plot(mtcars$mpg, mtcars$hp, pch = 21, col = mtcars$cyl,
+     bg = mtcars$cyl, cex = 2)
+```
+]
+
+---
+
+## Отключаем оси...   
+
+.pull-left[
+```{r, eval = F}
+plot(mtcars$mpg, 
+     mtcars$hp,
+     pch = 21, 
+     col = mtcars$cyl,
+     bg = mtcars$cyl, 
+     cex = 2,
+     # пустые подписи осей
+     xlab = '', ylab = '', 
+     # скрыть сами оси
+     axes = F)
+```
+]
+.pull-right[
+```{r, echo = F}
+plot(mtcars$mpg, mtcars$hp, pch = 21, col = mtcars$cyl, 
+     bg = mtcars$cyl, cex = 2, xlab = '', ylab = '', axes = F)
+```
+]
+
+---
+
+## ...перерисовываем оси...   
+
+.pull-left[
+```{r, eval = F}
+# строим график без осей
+plot(...)
+
+# оси c настройками
+axis(1, pos = 50, 
+     cex.axis = 2)
+axis(2, pos = 10, las = 2,
+     cex.axis = 2)
+
+# добавляем стрелки
+arrows(x0 = c(30, 10), 
+       y0 = c(50, 300),
+       x1 = c(34, 10), 
+       y1 = c(50, 345))
+```
+]
+.pull-right[
+```{r, echo = F}
+plot(mtcars$mpg, mtcars$hp, pch = 21, col = mtcars$cyl, 
+     bg = mtcars$cyl, cex = 2, xlab = '', ylab = '', axes = F)
+
+axis(1, pos = 50, cex.axis = 2)
+axis(2, pos = 10, cex.axis = 2, las = 2)
+
+arrows(x0 = c(30, 10), y0 = c(50, 300),
+       x1 = c(34, 10), y1 = c(50, 345))
+```
+]
+
+---
+
+## ...добавляем подписи осей...  
+
+.pull-left[
+```{r, eval = F}
+# ширина полей графика
+par(mar = c(4, 6, 6, 1))
+
+plot(...)    # график 
+axis(...)    # оси 
+arrows(...)  # стрелки
+
+# подписи осей  
+mtext("Миль на галлон", 
+      side = 1, line = 2, 
+      cex = 2)
+mtext("Мощность, лс", 
+      side = 2, line = 4, 
+      cex = 2)
+```
+]
+.pull-right[
+```{r, echo = F}
+par(mar = c(4, 6, 6, 1))
+
+plot(mtcars$mpg, mtcars$hp, pch = 21, col = mtcars$cyl, 
+     bg = mtcars$cyl, cex = 2, xlab = '', ylab = '', axes = F)
+
+axis(1, pos = 50, cex.axis = 2)
+axis(2, pos = 10, cex.axis = 2, las = 2)
+
+arrows(x0 = c(30, 10), y0 = c(50, 300),
+       x1 = c(34, 10), y1 = c(50, 345))
+
+mtext("Миль на галлон", side = 1, line = 2, cex = 2)
+mtext("Мощность, лс", side = 2, line = 4, cex = 2)
+```
+]
+
+---
+
+## ...добавляем заголовок...  
+
+.pull-left[
+```{r, eval = F}
+par(...)     # поля 
+plot(...)    # график 
+axis(...)    # оси 
+arrows(...)  # стрелки
+mtext(...)   # подписи осей 
+
+# заголовок
+mtext("Автомобили 1973-74", 
+      side = 3, line = 3, 
+      cex = 2, font = 2)
+# подзаголовок
+mtext('данные "mtcars"', 
+      side = 3, line = 1.5, 
+      cex = 1.5, font = 3)
+```
+]
+.pull-right[
+```{r, echo = F}
+par(mar = c(4, 6, 6, 1))
+
+plot(mtcars$mpg, mtcars$hp, pch = 21, col = mtcars$cyl, 
+     bg = mtcars$cyl, cex = 2, xlab = '', ylab = '', axes = F)
+
+axis(1, pos = 50, cex.axis = 2)
+axis(2, pos = 10, cex.axis = 2, las = 2)
+
+arrows(x0 = c(30, 10), y0 = c(50, 300),
+       x1 = c(34, 10), y1 = c(50, 345))
+
+mtext("Миль на галлон", side = 1, line = 2, cex = 2)
+mtext("Мощность, лс", side = 2, line = 3.5, cex = 2)
+
+mtext("Автомобили 1973-74", side = 3, 
+      line = 3, cex = 2, font = 2)
+mtext('данные "mtcars"', side = 3, 
+      line = 1.5, cex = 1.5, font = 3)
+```
+]
+
+---
+
+## ...добавляем легенду  
+
+.pull-left[
+```{r, eval = F}
+par(...)    # поля 
+plot(...)   # график 
+axis(...)   # оси 
+arrows(...) # стрелки
+mtext(...)  # подписи осей 
+mtext(...)  # заголовки
+
+# легенда
+mark <- unique(mtcars$cyl)
+legend('topright', 
+  legend = paste(mark, 
+              'цилиндров'),
+  fill = mark)
+```
+]
+.pull-right[
+```{r, echo = F}
+par(mar = c(4, 6, 6, 1))
+
+plot(mtcars$mpg, mtcars$hp, pch = 21, col = mtcars$cyl, 
+     bg = mtcars$cyl, cex = 2, xlab = '', ylab = '', axes = F)
+
+axis(1, pos = 50, cex.axis = 2)
+axis(2, pos = 10, cex.axis = 2, las = 2)
+
+arrows(x0 = c(30, 10), y0 = c(50, 300),
+       x1 = c(34, 10), y1 = c(50, 345))
+
+mtext("Миль на галлон", side = 1, line = 2, cex = 2)
+mtext("Мощность, лс", side = 2, line = 3.5, cex = 2)
+
+mtext("Автомобили 1973-74", side = 3, 
+      line = 3, cex = 2, font = 2)
+mtext('данные "mtcars"', side = 3, 
+      line = 1.5, cex = 1.5, font = 3)
+
+legend('topright', legend = paste(unique(mtcars$cyl), 'цилиндров'),
+       fill = unique(mtcars$cyl))
+```
+]
+
+---
+
+## Итого десять вызовов функций  
+
+.small[
+```{r, eval = F}
+par(mar = c(4, 6, 6, 1))       # поля графика
+
+# сам график без осей
+plot(mtcars$mpg, mtcars$hp, pch = 21, col = mtcars$cyl, 
+     bg = mtcars$cyl, cex = 2, xlab = '', ylab = '', axes = F)
+# оси
+axis(1, pos = 50, cex.axis = 2)
+axis(2, pos = 10, cex.axis = 2, las = 2)
+# стрелки на концах осей
+arrows(x0 = c(30, 10), y0 = c(50, 300), x1 = c(34, 10), y1 = c(50, 345))
+# подписи осей
+mtext("Миль на галлон", side = 1, line = 2, cex = 2)
+mtext("Мощность, лс", side = 2, line = 3.5, cex = 2)
+
+# заголовок и подзаголовок графика
+mtext("Автомобили 1973-74", side = 3, line = 3, cex = 2, font = 2)
+mtext('данные "mtcars"', side = 3, line = 1.5, cex = 1.5, font = 3)
+
+# легенда
+legend('topright', legend = paste(unique(mtcars$cyl), 'цилиндров'),
+       fill = unique(mtcars$cyl))
+```
+]
+
+---
+
+## Основные функции верхнего уровня  
+
+`plot()` – подстраивается под данные: график разброса, временного ряда, графики для объектов специальных типов: дендрограммы, график осыпи, остатки регрессии, и т.д.  
+
+`boxplot()` – коробчатые диаграммы;   
+
+`hist()` – гистограммы;  
+
+`pie()` – круговая диаграмма.  
+
+---
+
+## Основные функции нижнего уровня  
+
+`abline()` – добавляет прямую на график;  
+
+`points()` – добавляет точки наблюдений;   
+
+`lines()` – добавляет линию по точкам;  
+
+`curve()` – строит кривую по заданой функции.  
+
+---
+
+## Несколько графиков рядом  
+
+.pull-left[
+```{r, eval = F}
+attach(mtcars)
+# разбивка полотна
+layout(matrix(1:4, 2, 2))
+# графики
+plot(mpg, hp, 
+     pch = 21, bg = cyl)
+plot(disp, hp, pch = 21, 
+     bg = cyl)
+plot(mpg, wt, 
+     pch = 21, bg = cyl)
+plot(disp, wt, 
+     pch = 21, bg = cyl)
+detach(mtcars)
+```
+]
+.pull-right[
+```{r, echo = F}
+attach(mtcars)
+layout(matrix(1:4, 2, 2))
+plot(mpg, hp, pch = 21, bg = cyl)
+plot(disp, hp, pch = 21, bg = cyl)
+plot(mpg, wt, pch = 21, bg = cyl)
+plot(disp, wt, pch = 21, bg = cyl)
+detach(mtcars)
+```
+]
+
+---
+
+## Сохранение в файл
+
+
+
+---
+
+### Практическая часть занятия  
+
+- Прочитать главу 3 учебного пособия "Введение в язык статистической обработки данных R", повторить все примеры.   
+
+- Приступить к выполнению упражнений 5-7. Номер варианта - ваш номер в списке группы.   
+
+.center[
+<img src="./slides_practice_02_files/twenty-percent-cooler-octocat.png" width="23%">
+<font size = "4px">image credit: krman009@github.com</font>
+]
