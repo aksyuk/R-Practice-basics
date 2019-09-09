@@ -30,13 +30,22 @@ background-size: cover
 
 `r fa_chart_area(color = "#1E8449")` все средства находятся в базовой сборке (`base`);
 
-`r fa_chart_bar(color = "#1E8449")` можно собрать любой статический график с нуля   
+--
 
-`r fa_chart_line(color = "#1E8449")` результат сложно сохранить как объект   
+`r fa_chart_line(color = "#1E8449")` можно собрать любой статический график с нуля   
+
+--
+
+`r fa_chart_bar(color = "#1E8449")` результат сложно сохранить как объект   
+
+--
 
 `r fa_image(color = "#1E8449")` вывод на графическое устройство: экран, файл   
 
+--
+
 `r fa_code(color = "#1E8449")` Чтобы сделать красиво, нужно очень много кода   
+
 ---
 
 ## Базовая графика в `R`    
@@ -45,7 +54,7 @@ background-size: cover
 
 - Начинается с функции высокого уровня: `plot()`, `curve()`, `boxplot()`, `hist()` и др.   
 
-- Элементы добавляются на активный график функциями низкого уровня: `points()`, `abline()`, `axis()`, `text()` и др.  
+- Элементы добавляются на активный график функциями низкого уровня: `points()`, `abline()`, `axis()`, `mtext()`, `text()` и др.  
 
 ---
 
@@ -60,7 +69,7 @@ plot(mtcars$mpg,
    bg = mtcars$cyl, 
    cex = 2)
 ```
-- оси пересекаются не в 0  
+- оси пересекаются между делениями  
 - непонятные подписи осей  
 - мелкий текст  
 ]
@@ -325,7 +334,8 @@ legend('topright', legend = paste(unique(mtcars$cyl), 'цилиндров'),
 ```{r, eval = F}
 attach(mtcars)
 # разбивка полотна
-layout(matrix(1:4, 2, 2))
+layout(matrix(1:4, 2, 2,
+              byrow = T))
 # графики
 plot(mpg, hp, 
      pch = 21, bg = cyl)
@@ -341,7 +351,7 @@ detach(mtcars)
 .pull-right[
 ```{r, echo = F}
 attach(mtcars)
-layout(matrix(1:4, 2, 2))
+layout(matrix(1:4, 2, 2, byrow = T))
 plot(mpg, hp, pch = 21, bg = cyl)
 plot(disp, hp, pch = 21, bg = cyl)
 plot(mpg, wt, pch = 21, bg = cyl)
@@ -352,9 +362,58 @@ detach(mtcars)
 
 ---
 
+## Несколько графиков рядом  
+
+.pull-left[
+```{r}
+ly.mat <- matrix(c(1, 1, 1,
+           2, 3, 4), 
+        2, 3, byrow = T)
+ly.mat
+```
+
+```{r, eval = F}
+# разбивка полотна
+layout(ly.mat)
+plot(...)   # все графики
+...
+```
+]
+.pull-right[
+```{r, echo = F}
+attach(mtcars)
+
+ly.mat <- matrix(c(1, 1, 1, 2, 3, 4), 2, 3, byrow = T)
+layout(ly.mat)
+
+plot(mpg, hp, pch = 21, bg = cyl)
+plot(disp, hp, pch = 21, bg = cyl)
+plot(mpg, wt, pch = 21, bg = cyl)
+plot(disp, wt, pch = 21, bg = cyl)
+
+detach(mtcars)
+```
+]
+
+---
+
 ## Сохранение в файл
 
+```{r, eval = F}
+# открыть файл в рабочей директории
+#  для записи (если не существует, будет создан)
+png('RPlot.png', width = 600)
 
+# код создания графика
+plot(...)
+
+# закрыть устройство графического вывода
+dev.off()
+```
+
+- если файл пуст, значит, устройство вывода не закрыто   
+
+- длину/ширину можно задавать в пикселях (по умолчанию), сантиметрах и т.д.   
 
 ---
 
