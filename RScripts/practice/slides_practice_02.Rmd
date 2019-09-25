@@ -300,7 +300,7 @@ mtext('данные "mtcars"', side = 3, line = 1.5, cex = 1.5, font = 3)
 legend('topright', legend = paste(unique(mtcars$cyl), 'цилиндров'),
        fill = unique(mtcars$cyl))
 ```
-]
+] 
 
 ---
 
