@@ -179,3 +179,7 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
 .small {
   font-size: 70%;
 }
+
+.red {
+  color: red;
+}
