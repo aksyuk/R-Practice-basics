@@ -158,4 +158,29 @@ temp_to_celsius_bad2 <- function(temp, temp_scale = 'F') {
 
 # слайд 14 =====================================================================
 
+# загрузка функции с помощью `source()`  
+fileURL <- "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/outliersPlot.R"
+source(fileURL)
 
+# генерируем значения показателя
+set.seed(123) 
+x <- rnorm(sd = 15, mean = 151, n = 19)
+
+# два аномальных значения
+x[3] <- 256
+x[7] <- -15.4
+
+# метки наблюдений 
+x.labels <- letters[1:19]
+
+# запуск функции
+OutliersPlot(x, x.labels)
+OutliersPlot(x, x.labels, bound = 2)
+
+
+# слайд 15 =====================================================================
+
+# Решаем проблему с кириллицей в UTF-8
+eval(parse(fileURL, encoding = "UTF-8"))
+
+OutliersPlot(x, x.labels)

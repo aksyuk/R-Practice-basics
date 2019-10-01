@@ -304,8 +304,69 @@ df_weather
 
 ### Загрузка функции с помощью `source()`      
 
-Функция графической идентификации аномальных наблюдений (<a href = "">ссылка</href>)   
+Функция идентификации аномальных наблюдений (<a href = "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/outliersPlot.R">ссылка</href>)   
 
+```{r, eval = F}
+fileURL <- "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/outliersPlot.R"
+source(fileURL)
+
+# генерируем значения показателя
+set.seed(123) 
+x <- rnorm(sd = 15, mean = 151, n = 19)
+
+x[3] <- 256; x[7] <- -15.4  # два аномальных значения
+
+x.labels <- letters[1:19]    # метки наблюдений 
+
+OutliersPlot(x, x.labels) # запуск функции
+
+```
+
+---
+
+.center[
+```{r, echo = F}
+fileURL <- "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/outliersPlot.R"
+source(fileURL)
+
+# генерируем значения показателя
+set.seed(123) 
+x <- rnorm(sd = 15, mean = 151, n = 19)
+
+x[3] <- 256; x[7] <- -15.4  # два аномальных значения
+
+x.labels <- letters[1:19]    # метки наблюдений 
+
+OutliersPlot(x, x.labels) # запуск функции
+
+```
+]
+
+---
+
+.pull-left[
+```{r, eval = F}
+# Решаем проблему 
+#  с кириллицей в UTF-8
+
+# вместо source()
+eval(parse(fileURL, 
+  encoding = "UTF-8"))
+
+OutliersPlot(x, x.labels)
+
+```
+]
+
+.pull-right[.center[
+```{r, echo = F}
+fileURL <- "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/outliersPlot.R"
+eval(parse(fileURL, encoding = "UTF-8"))
+
+OutliersPlot(x, x.labels)
+
+```
+]]
 
 ---
 
