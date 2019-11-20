@@ -1,0 +1,308 @@
+---
+output:
+  xaringan::moon_reader:
+    css: ["./css/guu-slides-theme.css"]
+    seal: false
+    nature:
+      ratio: '16:9'
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+# Загрузка библиотек
+library('Hmisc')          # для расчёта корреляционной матрицы
+library('corrplot')       # визуализация корреляционных матриц: corrplot()
+
+# импорт данных
+load('./slides_practice_05_files/Пример_алкоголь.RData')
+
+```
+
+class: inverse, center, middle  
+background-image: url(./images/title_GERB-GUU_16-9.png)
+background-size: cover
+
+## Практикум на ЭВМ 4
+
+### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
+
+20 ноября 2019
+
+---
+
+## Регрессионный анализ в R    
+
+- Оценка параметров    
+- Проверка значимости    
+- Учёт фиктивных переменных    
+- Сравнение нескольких моделей  
+
+---
+
+**Пример на данных по потреблению алкоголя**      
+
+* `Ret.Vodka.2011.ps` – розничная продажа ликёроводочных изделий за год, литров на человека.   
+
+* `Rural.2011` – удельный вес сельского населения, в процентах, оценка на конец года.   
+
+* `Wage.ps.2011` – среднедушевые денежные доходы населения в месяц, рублей.   
+
+* `Injury.2011` – заболеваемость на 1000 человек населения: травмы, отравления и некоторые другие последствия воздействия внешних причин.   
+
+---
+
+##### Пример на данных по потреблению алкоголя  
+
+.small[
+```{r}
+head(reg.df)
+str(reg.df)
+
+```
+]
+
+---
+
+.center[
+```{r, echo = F}
+# сохраняем корреляционную матрицу
+matrix.cor <- cor(reg.df[, -1])
+
+# сохраняем p-значения
+matrix.p <- rcorr(as.matrix(reg.df[, -1]))$P
+
+# изображаем матрицу графически
+corrplot(matrix.cor,          # сама корреляционная матрица
+         order = 'original',  # порядок отображения показателей 
+         # в матрице
+         diag = F,            # не отображать значения на главной 
+         # диагонали
+         p.mat = matrix.p,    # p-значения
+         insig = 'blank',     # метод отображения незначимых
+         sig.level = 0.05)    # уровень значимости
+
+```
+]
+
+---
+
+#### Оценка параметров модели
+
+```{r, eval = F}
+fit.1 <- lm(Retail.Vodka.2011.ps ~ Rural.2011 + 
+                Wage.ps.2011 + Injury.2011, 
+            data = reg.df)
+summary(fit.1)
+
+```
+
+.small[
+```{r, echo = F}
+fit.1 <- lm(Retail.Vodka.2011.ps ~ Rural.2011 + Wage.ps.2011 + Injury.2011, 
+            data = reg.df)
+summary(fit.1)
+
+```
+]
+
+---
+
+#### Пошаговое исключение регрессоров   
+
+```{r, eval = F}
+fit.2 <- lm(Retail.Vodka.2011.ps ~ Rural.2011 + 
+                Injury.2011, 
+            data = reg.df)
+# только таблица коэффициентов
+round(summary(fit.2)$coef, 4)
+
+```
+
+
+```{r, echo = F}
+fit.2 <- lm(Retail.Vodka.2011.ps ~ Rural.2011 + 
+                Injury.2011, 
+            data = reg.df)
+# только таблица коэффициентов
+round(summary(fit.2)$coef, 4)
+
+```
+
+---
+
+#### Значим только X1
+
+```{r, eval = F}
+fit.X1 <- lm(Retail.Vodka.2011.ps ~ Rural.2011, 
+             data = reg.df)
+# таблица коэффициентов
+round(summary(fit.X1)$coef, 4)
+# R-квадрат
+round(summary(fit.X1)$r.sq, 3)
+
+```
+
+```{r, echo = F}
+fit.X1 <- lm(Retail.Vodka.2011.ps ~ Rural.2011, 
+             data = reg.df)
+# таблица коэффициентов
+round(summary(fit.X1)$coef, 4)
+# R-квадрат
+round(summary(fit.X1)$r.sq, 3)
+
+```
+
+---
+
+#### Модель с переменной структурой   
+
+.small[
+```{r, eval = F}
+fit.X1.fo <- lm(Retail.Vodka.2011.ps ~ Rural.2011 * FO, 
+                data = reg.df)
+round(summary(fit.X1.fo)$coef, 4) # таблица коэффициентов
+
+```
+
+```{r, echo = F}
+fit.X1.fo <- lm(Retail.Vodka.2011.ps ~ Rural.2011 * FO, 
+                data = reg.df)
+round(summary(fit.X1.fo)$coef, 4) # таблица коэффициентов
+
+```
+]
+
+---
+
+.small[
+```{r}
+# создаём фрейм со всеми переменными-факторами (создаём фиктивные)
+X.matrix <- model.matrix(Retail.Vodka.2011.ps ~ Rural.2011 * FO, 
+                         data = reg.df)
+# присоединяем независимую переменную
+data.fit <- cbind(Retail.Vodka.2011.ps = reg.df$Retail.Vodka.2011.ps, 
+                  data.frame(X.matrix)[, -1])
+# результат
+head(data.fit[, 1:12])
+
+```
+]
+
+---
+
+#### Функция исключения незначимых регрессоров 
+
+```{r, eval = F}
+# функция с последовательным исключением незначимых регрессоров
+source('https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/removeFactorsByPValue.R')
+
+fit.X1.fo <- removeFactorsByPValue(data = data.fit, 
+                    y.var.name = 'Retail.Vodka.2011.ps')
+
+```
+
+```{r, echo = F}
+source('https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/removeFactorsByPValue.R')
+
+fit.X1.fo <- removeFactorsByPValue(data = data.fit, 
+                    y.var.name = 'Retail.Vodka.2011.ps')
+round(summary(fit.X1.fo)$coef, 4) # таблица коэффициентов
+message("R-sq = ", round(summary(fit.X1.fo)$r.sq, 3)) # R-квадрат
+
+```
+
+---
+
+#### ПЛР с переменной структурой на второй по силе корреляции фактор (модель `fit.X2.fo`)   
+
+```{r, echo = F}
+# строим ПЛР на второй по силе корреляции фактор
+fit.X2 <- lm(Retail.Vodka.2011.ps ~ Injury.2011, 
+             data = reg.df)
+
+# создаём фрейм со всеми переменными-факторами (создаём фиктивные)
+X.matrix <- model.matrix(Retail.Vodka.2011.ps ~ Injury.2011 * FO, data = reg.df)
+data.fit <- cbind(Retail.Vodka.2011.ps = reg.df$Retail.Vodka.2011.ps, 
+                  data.frame(X.matrix)[, -1])
+
+# доводим до значимости с помощью пользовательской функции
+fit.X2.fo <- removeFactorsByPValue(data = data.fit, 
+                                   y.var.name = 'Retail.Vodka.2011.ps')
+
+```
+
+.small[
+```{r, echo = F}
+round(summary(fit.X2.fo)$coef, 4) # таблица коэффициентов
+message("R-sq = ", round(summary(fit.X2.fo)$r.sq, 3)) # R-квадрат
+
+```
+]
+
+---
+
+#### Сравнение моделей  
+
+```{r}
+# модели с фактором Rural.2011
+anova(fit.X1, fit.X1.fo)
+
+```
+
+---
+
+#### Сравнение моделей  
+
+```{r}
+# модели с фактором Injury.2011
+anova(fit.X2, fit.X2.fo)
+
+```
+
+---
+
+#### Сравнение моделей   
+
+```{r, echo = F}
+# список построенных моделей
+models.list <- list(fit.X1, fit.X1.fo, fit.X2, fit.X2.fo)
+names(models.list) <- c('fit.X1', 'fit.X1.fo', 'fit.X2', 'fit.X2.fo')
+
+# фрейм с характеристиками четырёх моделей
+df.goodness.of.fit <- data.frame(Модель = names(models.list), 
+                                       R.2.скорр = 0,
+                                       F.расч = 0,
+                                       Станд.Ошибка = 0)
+for (i in 1:length(models.list)) {
+    # скорректированный R-квадрат
+    df.goodness.of.fit[i, 'R.2.скорр'] <- 
+        round(summary(models.list[[i]])$adj.r.squared, 3)
+    # F расчётное
+    df.goodness.of.fit[i, 'F.расч'] <- 
+        round(summary(models.list[[i]])$fstatistic[1], 2)
+    # стандартная ошибка
+    df.goodness.of.fit[i, 'Станд.Ошибка'] <- 
+        round(summary(models.list[[i]])$sigma, 1)
+}
+
+df.goodness.of.fit
+
+message(paste0("mean(Y) = ", round(mean(reg.df$Retail.Vodka.2011.ps), 1)))
+
+```
+
+
+---
+
+### Практическая часть занятия  
+
+- Прочитать указания к первой лабораторной работе повторить код примеров. <a href = "github.com/aksyuk/R-Practice-basics/tree/master/RScripts/manual_labs">github.com/aksyuk/R-Practice-basics/tree/master/RScripts/manual_labs</a>   
+
+- Приступить к выполнению упр. 11 и лабораторной №2. 
+
+.center[
+<img src="./slides_practice_04_files/hubot.jpg" width="23%">
+<font size = "4px">image credit: octodex.github.com</font>
+]
