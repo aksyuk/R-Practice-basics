@@ -47,52 +47,52 @@ background-size: cover
 
 ---
 
-<!-- ##### Пример на данных по потреблению алкоголя   -->
+##### Пример на данных по потреблению алкоголя
 
-<!-- .small[ -->
-<!-- ```{r, echo = F} -->
-<!-- # фрейм с характеристиками четырёх моделей -->
-<!-- df.goodness.of.fit <- data.frame(Модель = names(models.list),  -->
-<!--                                  Формула = rep('', length(models.list)), -->
-<!--                                        R.2.скорр = 0, -->
-<!--                                        F.расч = 0, -->
-<!--                                        Станд.Ошибка = 0) -->
-<!-- df.goodness.of.fit$Формула <- as.character(df.goodness.of.fit$Формула) -->
+.small[
+```{r, echo = F}
+# фрейм с характеристиками четырёх моделей
+df.goodness.of.fit <- data.frame(Модель = names(models.list),
+                                 Формула = rep('', length(models.list)),
+                                       R.2.скорр = 0,
+                                       F.расч = 0,
+                                       Станд.Ошибка = 0)
+df.goodness.of.fit$Формула <- as.character(df.goodness.of.fit$Формула)
 
-<!-- for (i in 1:length(models.list)) { -->
-<!--     alphas <- summary(models.list[[i]])$coef -->
-<!--     signs <- rep('+', nrow(summary(models.list[[i]])$coef)) -->
-<!--     signs[summary(models.list[[i]])$coef[, 1] < 0] <- '' -->
-<!--     signs <- signs[-1] -->
-<!--     nwln <- rep(c('', '\\\\'), nrow(summary(models.list[[i]])$coef) / 2) -->
+for (i in 1:length(models.list)) {
+    alphas <- summary(models.list[[i]])$coef
+    signs <- rep('+', nrow(summary(models.list[[i]])$coef))
+    signs[summary(models.list[[i]])$coef[, 1] < 0] <- ''
+    signs <- signs[-1]
+    nwln <- rep(c('', '\\\\'), nrow(summary(models.list[[i]])$coef) / 2)
 
-<!--     df.goodness.of.fit[i, 'Формула'] <-  -->
-<!--         paste0('.small[ $Y = ', round(summary(models.list[[i]])$coef[, 1][1], 2), -->
-<!--                paste0(signs, round(summary(models.list[[i]])$coef[, 1][-1], 2),  -->
-<!--                       ' \\cdot ', rownames(summary(models.list[[i]])$coef)[-1], -->
-<!--                       nwln,  -->
-<!--                       collapse = ''), -->
-<!--                '$ ]') -->
-<!-- } -->
+    df.goodness.of.fit[i, 'Формула'] <-
+        paste0('.small[ $Y = ', round(summary(models.list[[i]])$coef[, 1][1], 2),
+               paste0(signs, round(summary(models.list[[i]])$coef[, 1][-1], 2),
+                      ' \\cdot ', rownames(summary(models.list[[i]])$coef)[-1],
+                      nwln,
+                      collapse = ''),
+               '$ ]')
+}
 
-<!-- for (i in 1:length(models.list)) { -->
-<!--     # скорректированный R-квадрат -->
-<!--     df.goodness.of.fit[i, 'R.2.скорр'] <-  -->
-<!--         round(summary(models.list[[i]])$adj.r.squared, 3) -->
-<!--     # F расчётное -->
-<!--     df.goodness.of.fit[i, 'F.расч'] <-  -->
-<!--         round(summary(models.list[[i]])$fstatistic[1], 2) -->
-<!--     # стандартная ошибка -->
-<!--     df.goodness.of.fit[i, 'Станд.Ошибка'] <-  -->
-<!--         round(summary(models.list[[i]])$sigma, 1) -->
-<!-- } -->
+for (i in 1:length(models.list)) {
+    # скорректированный R-квадрат
+    df.goodness.of.fit[i, 'R.2.скорр'] <-
+        round(summary(models.list[[i]])$adj.r.squared, 3)
+    # F расчётное
+    df.goodness.of.fit[i, 'F.расч'] <-
+        round(summary(models.list[[i]])$fstatistic[1], 2)
+    # стандартная ошибка
+    df.goodness.of.fit[i, 'Станд.Ошибка'] <-
+        round(summary(models.list[[i]])$sigma, 1)
+}
 
-<!-- kable(df.goodness.of.fit, format = 'html') -->
+kable(df.goodness.of.fit, format = 'html')
 
-<!-- ``` -->
-<!-- ] -->
+```
+]
 
-<!-- --- -->
+---
 
 ### График разброса остатков   
 
@@ -268,28 +268,63 @@ dev.off()
 
 #### Влияющие наблюдения   
 
-```{r}
+```{r, warning = F}
 h <- augment(fit.X2.fo, reg.df)
 rownames(h) <- rownames(reg.df)
-lev <- h[rownames(reg.df) %in% c(8, 72), '.cooksd', drop = F]
+colnames(h)
 
+# регионы с номерами 8, 72
+lev <- h[rownames(reg.df) %in% c(8, 72), 
+         '.cooksd', drop = F]
+
+```
+
+---
+
+#### Влияющие наблюдения   
+
+```{r, warning = F}
 # критическая граница F-распределения
 n <- nrow(reg.df)
 k <- nrow(summary(fit.X2.fo)$coeff)
 f.tabl <- qf(1 - 0.05, df1 = k, df2 = n - k)
 
-# сравниваем расчётные значения с критической границей
-cbind(leverage = round(lev, 2), 
-      f.tabl = round(f.tabl, 2), 
-      p.val = round(pf(lev$.cooksd, 
-                       df1 = k, 
-                       df2 = n - k), 4))
+# сравниваем расчётные значения 
+#  с критической границей
+cbind(leverage = round(lev, 2), f.tabl = round(f.tabl, 2), 
+  p.val = round(pf(lev$.cooksd, df1 = k, df2 = n - k), 4))
 
 ```
 
+---
 
+#### Проверка равенства среднего остатков нулю   
 
+```{r}
+# t-тест для среднего
+t.test(fit.X2.fo$residuals, mu=0, alternative='two.sided')
 
+```
+
+---
+
+#### Тесты на гетероскедастичность   
+
+```{r}
+# тест Бройша-Пагана 
+bptest(fit.X2.fo)
+
+```
+
+---
+
+#### Тесты на автокорреляцию    
+
+```{r}
+# тест Дарбина-Уотсона на автокорреляцию
+dwtest(fit.X2.fo, alternative = 'two.sided')
+
+```
 
 ---
 
