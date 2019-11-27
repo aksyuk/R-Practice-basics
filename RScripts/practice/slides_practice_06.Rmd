@@ -1,0 +1,278 @@
+---
+output:
+  xaringan::moon_reader:
+    css: ["./css/guu-slides-theme.css"]
+    seal: false
+    nature:
+      ratio: '16:9'
+      countIncrementalSlides: false
+---
+
+```{r setup, include = FALSE}
+options(htmltools.dir.version = FALSE)
+
+# Загрузка библиотек
+library('lmtest')     # тесты остатков: bptest(), dwtest()
+library('broom')      # трансформации данных: augment()
+library('car')        # тест на мультиколинеарность: vif()
+library('sandwich')   # оценки модели с попракой на гетероскедастичность: vcovHC()
+library('knitr')      # красивые таблицы 
+library('Cairo')       # красивые графики
+
+# импорт данных
+load('./slides_practice_06_files/Пример_алкоголь_модели.RData')
+
+```
+
+class: inverse, center, middle  
+background-image: url(./images/title_GERB-GUU_16-9.png)
+background-size: cover
+
+## Практикум на ЭВМ 4
+
+### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
+
+27 ноября 2019
+
+---
+
+## Проверка остатков регрессионной модели       
+
+- График остатков    
+- Проверка условий Гаусса-Маркова    
+- Поиск влияющих и аномальных наблюдений     
+
+---
+
+##### Пример на данных по потреблению алкоголя  
+
+.small[
+```{r, echo = F}
+# фрейм с характеристиками четырёх моделей
+df.goodness.of.fit <- data.frame(Модель = names(models.list), 
+                                 Формула = rep('', length(models.list)),
+                                       R.2.скорр = 0,
+                                       F.расч = 0,
+                                       Станд.Ошибка = 0)
+df.goodness.of.fit$Формула <- as.character(df.goodness.of.fit$Формула)
+
+for (i in 1:length(models.list)) {
+    alphas <- summary(models.list[[i]])$coef
+    signs <- rep('+', nrow(summary(models.list[[i]])$coef))
+    signs[summary(models.list[[i]])$coef[, 1] < 0] <- ''
+    signs <- signs[-1]
+    nwln <- rep(c('', '\\\\'), nrow(summary(models.list[[i]])$coef) / 2)
+    
+    df.goodness.of.fit[i, 'Формула'] <- 
+        paste0('.small[ $Y = ', round(summary(models.list[[i]])$coef[, 1][1], 2),
+               paste0(signs, round(summary(models.list[[i]])$coef[, 1][-1], 2), 
+                      ' \\cdot ', rownames(summary(models.list[[i]])$coef)[-1],
+                      nwln, 
+                      collapse = ''),
+               '$ ]')
+}
+
+for (i in 1:length(models.list)) {
+    # скорректированный R-квадрат
+    df.goodness.of.fit[i, 'R.2.скорр'] <- 
+        round(summary(models.list[[i]])$adj.r.squared, 3)
+    # F расчётное
+    df.goodness.of.fit[i, 'F.расч'] <- 
+        round(summary(models.list[[i]])$fstatistic[1], 2)
+    # стандартная ошибка
+    df.goodness.of.fit[i, 'Станд.Ошибка'] <- 
+        round(summary(models.list[[i]])$sigma, 1)
+}
+
+kable(df.goodness.of.fit, format = 'html')
+
+```
+]
+
+---
+
+### График разброса остатков   
+
+.pull-left[
+.small[
+```{r, eval = F}
+# сохранённые модели
+load('Пример_алкоголь_модели.RData')
+
+# лучшая модель
+fit.X2.fo <- models.list[['fit.X2.fo']]
+
+# первый график диагностики
+plot(fit.X2.fo, 1)
+
+```
+]]
+
+.pull-right[
+.center[
+```{r, include = F}
+# лучшая модель
+i <- 4
+
+Cairo('./slides_practice_06_files/plot-01.png', width = 500, height = 500)
+
+par(oma = c(1, 1, 1, 1))
+par(mar = c(4, 4, 1, 1))
+
+# первый график
+plot(models.list[[i]], 1)
+    
+dev.off()
+
+```
+<img src = "./slides_practice_06_files/plot-01.png"></img>
+]]
+
+---
+
+### График нормальных квантилей (Q-Q)   
+
+.pull-left[
+.small[
+```{r, eval = F}
+# второй график диагностики
+plot(fit.X2.fo, 2)
+
+```
+]]
+
+.pull-right[
+.center[
+```{r, include = F}
+# лучшая модель
+i <- 4
+
+Cairo('./slides_practice_06_files/plot-02.png', width = 500, height = 500)
+
+par(oma = c(1, 1, 1, 1))
+par(mar = c(4, 4, 1, 1))
+
+# второй график
+plot(models.list[[i]], 2)
+    
+dev.off()
+
+```
+<img src = "./slides_practice_06_files/plot-02.png"></img>
+]]
+
+---
+
+### Разброс шкалированных остатков    
+
+.pull-left[
+.small[
+```{r, eval = F}
+# третий график диагностики
+plot(fit.X2.fo, 3)
+
+```
+]]
+
+.pull-right[
+.center[
+```{r, include = F}
+# лучшая модель
+i <- 4
+
+Cairo('./slides_practice_06_files/plot-03.png', width = 500, height = 500)
+
+par(oma = c(1, 1, 1, 1))
+par(mar = c(4, 4, 1, 1))
+
+# третий график
+plot(models.list[[i]], 3)
+    
+dev.off()
+
+```
+<img src = "./slides_practice_06_files/plot-03.png"></img>
+]]
+
+---
+
+### График расстояний Кука    
+
+.pull-left[
+.small[
+```{r, eval = F}
+# четвёртый график диагностики
+plot(fit.X2.fo, 4)
+
+```
+]]
+
+.pull-right[
+.center[
+```{r, include = F}
+# лучшая модель
+i <- 4
+
+Cairo('./slides_practice_06_files/plot-04.png', width = 500, height = 500)
+
+par(oma = c(1, 1, 1, 1))
+par(mar = c(4, 4, 1, 1))
+
+# четвёртый график
+plot(models.list[[i]], 4)
+    
+dev.off()
+
+```
+<img src = "./slides_practice_06_files/plot-04.png"></img>
+]]
+
+
+---
+
+### Разброс остатков против оценок влияния     
+
+.pull-left[
+.small[
+```{r, eval = F}
+# пятый график диагностики
+plot(fit.X2.fo, 5)
+
+```
+]]
+
+.pull-right[
+.center[
+```{r, include = F}
+# лучшая модель
+i <- 4
+
+Cairo('./slides_practice_06_files/plot-05.png', width = 500, height = 500)
+
+par(oma = c(1, 1, 1, 1))
+par(mar = c(4, 4, 1, 1))
+
+# пятый график
+plot(models.list[[i]], 5)
+    
+dev.off()
+
+```
+<img src = "./slides_practice_06_files/plot-05.png"></img>
+]]
+
+
+
+
+---
+
+### Практическая часть занятия  
+
+- Прочитать указания к первой лабораторной работе повторить код примеров. <a href = "github.com/aksyuk/R-Practice-basics/tree/master/RScripts/manual_labs">github.com/aksyuk/R-Practice-basics/tree/master/RScripts/manual_labs</a>   
+
+- Приступить к выполнению упр. 12 и лабораторной №3. 
+
+.center[
+<img src="./slides_practice_04_files/hubot.jpg" width="23%">
+<font size = "4px">image credit: octodex.github.com</font>
+]
