@@ -12,7 +12,6 @@ output:
 options(htmltools.dir.version = FALSE)
 
 # devtools::install_github("ropenscilabs/icon")
-
 library('icon')
 
 ```
@@ -21,11 +20,11 @@ class: inverse, center, middle
 background-image: url(../images/title_GERB-GUU_16-9.png)
 background-size: cover
 
-## OLAP-инструменты R
+## Практикум на ЭВМ 4
 
 ### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
 
-26 февраля 2020
+25 сентября 2019
 
 ---
 
