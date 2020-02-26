@@ -1,7 +1,7 @@
 ---
 output:
   xaringan::moon_reader:
-    css: ["guu-slides-theme.css"]
+    css: ["./css/guu-slides-theme.css"]
     seal: false
     nature:
       ratio: '16:9'
