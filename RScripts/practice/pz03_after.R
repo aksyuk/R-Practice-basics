@@ -77,7 +77,7 @@ is_temp_celsius_hot <- function(temp_C) {
 }
 
 # if не поддерживает векторизацию
-is_temp_celsius_hot(c(38, 18, 42))
+is_temp_celsius_hot(c(12, 18, 42))
 
 
 # слайд 9 ======================================================================
@@ -89,7 +89,7 @@ is_temp_celsius_hot <- function(temp_C) {
    temp_C > 35
 }
 
-is_temp_celsius_hot(c(38, 18, 42))
+is_temp_celsius_hot(c(12, 18, 42))
 
 
 # слайд 10 =====================================================================
@@ -139,6 +139,10 @@ temp_scale <- 'C'
 # функция находит второй аргумент из глобального пространства имён
 temp_to_celsius_bad(df_weather$temp)
 
+# но если его не будет, получим ошибку
+rm(temp_scale)
+temp_to_celsius_bad(df_weather$temp)
+
 
 # слайд 13 =====================================================================
 
@@ -154,6 +158,10 @@ temp_to_celsius_bad2 <- function(temp, temp_scale = 'F') {
    
    output
 }
+
+# фрейм изменился, но в коде вызова функции не видно присваивания!
+temp_to_celsius_bad2(df_weather$temp, 'C')
+df_weather
 
 
 # слайд 14 =====================================================================
