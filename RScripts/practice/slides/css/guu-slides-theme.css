@@ -183,3 +183,7 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
 .red {
   color: red;
 }
+
+.green {
+  color: green;
+}
