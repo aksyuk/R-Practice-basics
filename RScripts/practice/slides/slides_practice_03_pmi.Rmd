@@ -1,0 +1,382 @@
+---
+output:
+  xaringan::moon_reader:
+    css: ["../css/guu-slides-theme.css"]
+    seal: false
+    nature:
+      ratio: '16:9'
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+library('icon')
+
+# sourse of examples:
+#  https://swcarpentry.github.io/r-novice-inflammation
+```
+
+class: inverse, center, middle  
+background-image: url(../images/title_GERB-GUU_16-9.png)
+background-size: cover
+
+## Практикум на ЭВМ 4
+
+### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
+
+2 октября 2019
+
+---
+
+## Создание пользовательской функции    
+
+`r fa_code(color = "#1F618D")` создаём скрипт для анализа данных   
+
+--
+
+`r fa_copy(color = "#1F618D")` выявляем повторяющиеся операции (повтроение графика, расчёт описательных статистик, сравнение моделей)    
+
+--
+
+
+`r fa_code(color = "#1F618D")` обособляем участок кода    
+
+--
+
+`r fa_copy(color = "#1F618D")` используем повторно     
+
+---
+
+## Функции как методы классов       
+
+`r fa_envelope(color = "#6C3483")` создаём объект пользовательского класса     
+
+--
+
+`r fa_edit(color = "#6C3483")` пишем функцию-конструктор для создания объекта   
+
+--
+
+
+`r fa_wrench(color = "#6C3483")` пишем свои собственные функции-методы или модифицируем существующие под свой класс (полиморфизм)        
+
+--
+
+`r fa_book(color = "#6C3483")` добавляем документацию и тесты     
+
+--
+
+`r fa_dropbox(color = "#6C3483")` оформляем в пакет     
+
+---
+
+### Пример функции: перевести &deg;F в &deg;C   
+
+```{r}
+# Аргумент: temp_F -- температура по Фаренгейту
+# Возвращаемое значение: vector, double
+fahrenheit_to_celsius <- function(temp_F) {
+  temp_C <- (temp_F - 32) * 5 / 9
+  return(round(temp_C, 0))
+}
+
+# температура замерзания воды по Цельсию
+fahrenheit_to_celsius(32)
+
+```
+
+*Явно включать* `return` *необязательно*
+
+---
+
+### Пример функции: перевести &deg;С в &deg;K   
+
+```{r}
+# Аргумент: temp_C -- температура по Цельсию
+# Возвращаемое значение: vector, double
+celsius_to_kelvin <- function(temp_C) {
+  temp_K <- temp_C + 273.15
+  return(temp_K)
+}
+
+# температура замерзания воды в кельвинах
+celsius_to_kelvin(0)
+
+```
+
+---
+
+### Композиция функций: перевести &deg;F в &deg;K   
+
+```{r}
+# Аргумент: temp_F -- температура по Фаренгейту
+# Возвращаемое значение: vector, double
+fahrenheit_to_kelvin <- function(temp_F) {
+  temp_C <- fahrenheit_to_celsius(temp_F)
+  temp_K <- celsius_to_kelvin(temp_C)
+  temp_K
+}
+
+# температура замерзания воды в кельвинах
+fahrenheit_to_kelvin(32)
+
+```
+
+*Функция находит* `fahrenheit_to_celsius()` *и* `celsius_to_kelvin()` *в глобальном пространстве имён*  
+
+---
+
+Альтернативный подход -- вложенные вызовы:  
+
+```{r}
+celsius_to_kelvin(fahrenheit_to_celsius(32))
+```
+
+Функции поддерживают векторизацию:  
+
+```{r}
+fahrenheit_to_celsius(c(0, 15, 32, 74))
+```
+
+---
+
+### Проверка условий и векторизация  
+
+Функция для прогноза погоды: температура выше 35&deg;C – это жарко  
+
+.small[
+```{r}
+# Аргумент: temp_C -- температура по Цельсию
+# Возвращаемое значение: vector(1!), logical 
+is_temp_celsius_hot <- function(temp_C) {
+  if (temp_C > 35) output <- TRUE
+  output
+}
+
+is_temp_celsius_hot(c(38, 18, 42))
+```
+]
+
+---
+
+### Проверка условий и векторизация  
+
+**`if` не поддерживает векторизацию!**    
+
+```{r}
+# Аргумент: temp_C -- температура по Цельсию
+# Возвращаемое значение: vector, logical 
+is_temp_celsius_hot <- function(temp_C) {
+  temp_C > 35
+}
+
+is_temp_celsius_hot(c(38, 18, 42))
+
+```
+
+---
+
+### Функции и пространство имён      
+
+Переводим температуру из прогноза погоды в шкалу Цельсия
+
+```{r}
+# Аргументы: 
+#  * temp -- температура, 
+#  * temp_scale -- шкала (F по умолчанию)
+# Возвращаемое значение: vector, double 
+temp_to_celsius <- function(temp, temp_scale = 'F') {
+  output <- rep(NA, length(temp))
+  output[temp_scale == 'C'] <- temp[temp_scale == 'C']
+  output[temp_scale == 'F'] <- 
+    fahrenheit_to_celsius(temp[temp_scale == 'F'])
+  output
+}
+
+```
+
+---
+
+
+```{r, include = F}
+df_weather <- data.frame(city = c('Москва', 'Копенгаген', 'Томпсон'),
+                         temp = c(16, 11, 31),
+                         temp_scale = c('C', 'C', 'F'))
+```
+
+```{r}
+df_weather
+
+df_weather$temp_C <- 
+  temp_to_celsius(df_weather$temp, df_weather$temp_scale)
+df_weather
+
+```
+
+---
+
+**Порядок обращения к пространствам имён**    
+
+```{r, include = F}
+temp_to_celsius_bad <- function(temp) {
+  output <- rep(NA, length(temp))
+  output[temp_scale == 'C'] <- temp[temp_scale == 'C']
+  output[temp_scale == 'F'] <- 
+    fahrenheit_to_celsius(temp[temp_scale == 'F'])
+  output
+}
+
+```
+
+```{r, eval = F}
+temp_to_celsius_bad <- function(temp) {
+...   # теперь в функции нет temp_scale
+}
+
+```
+
+```{r}
+temp_scale <- 'C'  # это глобальный temp_scale
+
+temp_to_celsius_bad(df_weather$temp)
+
+```
+
+```{r, eval = F}
+temp_to_celsius_bad(temp)
+
+```
+
+.red[
+```{r, echo = F}
+message("Error: object 'temp' not found")
+
+```
+]
+
+---
+
+### Глобальное присваивание      
+
+```{r, include = F}
+temp_to_celsius_bad2 <- function(temp, temp_scale = 'F') {
+  output <- rep(NA, length(temp))
+  output[temp_scale == 'C'] <- temp[temp_scale == 'C']
+  output[temp_scale == 'F'] <- 
+    fahrenheit_to_celsius(temp[temp_scale == 'F'])
+  
+  df_weather$temp_C2 <<- output
+  
+  output
+}
+
+```
+
+.small[
+```{r, eval = F}
+temp_to_celsius_bad2 <- function(temp, temp_scale = 'F') {
+  ... 
+  df_weather$temp_C2 <<- output  # глобальное присваивание
+  output
+}
+
+# вызов функции без присваивания результата
+temp_to_celsius_bad2(df_weather$temp, df_weather$temp_scale)
+# тем не менее, фрейм изменился
+df_weather
+
+```
+
+```{r, echo = F}
+temp_to_celsius_bad2(df_weather$temp, df_weather$temp_scale)
+
+df_weather
+
+```
+]
+
+.red[
+**Лучше не присваивать глобально, а передавать </br> в возвращаемое значение!**
+]
+
+---
+
+### Загрузка функции с помощью `source()`      
+
+Функция идентификации аномальных наблюдений (<a href = "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/outliersPlot.R">ссылка</href>)   
+
+```{r, eval = F}
+fileURL <- "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/outliersPlot.R"
+source(fileURL)
+
+# генерируем значения показателя
+set.seed(123) 
+x <- rnorm(sd = 15, mean = 151, n = 19)
+
+x[3] <- 256; x[7] <- -15.4  # два аномальных значения
+
+x.labels <- letters[1:19]    # метки наблюдений 
+
+OutliersPlot(x, x.labels) # запуск функции
+
+```
+
+---
+
+.center[
+```{r, echo = F}
+fileURL <- "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/outliersPlot.R"
+source(fileURL)
+
+# генерируем значения показателя
+set.seed(123) 
+x <- rnorm(sd = 15, mean = 151, n = 19)
+
+x[3] <- 256; x[7] <- -15.4  # два аномальных значения
+
+x.labels <- letters[1:19]    # метки наблюдений 
+
+OutliersPlot(x, x.labels) # запуск функции
+
+```
+]
+
+---
+
+.pull-left[
+```{r, eval = F}
+# Решаем проблему 
+#  с кириллицей в UTF-8
+
+# вместо source()
+eval(parse(fileURL, 
+  encoding = "UTF-8"))
+
+OutliersPlot(x, x.labels)
+
+```
+]
+
+.pull-right[.center[
+```{r, echo = F}
+fileURL <- "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/outliersPlot.R"
+eval(parse(fileURL, encoding = "UTF-8"))
+
+OutliersPlot(x, x.labels)
+
+```
+]]
+
+---
+
+### Практическая часть занятия  
+
+- Прочитать главу 4 учебного пособия "Введение в язык статистической обработки данных R", повторить все примеры.   
+
+- Приступить к выполнению упражнений 8-9. Номер варианта - ваш номер в списке группы.   
+
+.center[
+<img src="./slides_practice_03_pmi_files/codercat.jpg" width="23%">
+<font size = "4px">image credit: octodex.github.com</font>
+]
