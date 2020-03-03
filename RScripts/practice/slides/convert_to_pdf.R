@@ -11,7 +11,7 @@ library('xaringan')
 # pagedown::chrome_print("./slides/slides_practice_02.Rmd", 
 #                        browser = "C:\\Users\\sa_suyazova\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe")
 
-pagedown::chrome_print("slides_practice_02.Rmd", 
+pagedown::chrome_print("./slides_practice_03.Rmd", 
                        browser = "C:\\Users\\sa_suyazova\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe")
 
 # # or just pass the HTML output file path to chrome_print()
