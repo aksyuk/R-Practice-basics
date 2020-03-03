@@ -176,7 +176,7 @@ is_temp_celsius_hot <- function(temp_C) {
   temp_C > 35
 }
 
-is_temp_celsius_hot(c(38, 18, 42))
+is_temp_celsius_hot(c(12, 18, 42))
 ```
 
 .green[
