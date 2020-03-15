@@ -18,7 +18,7 @@ my.seed <- 123
 state_table <- data.frame(key = c('CA', 'NY', 'WA', 'ON', 'QU'),
                           name = c('Калифорния', 'Нью Йорк', 'Вашингтон', 
                                    'Онтарио', 'Квебек'),
-                          country = c('США', 'США', 'USA', 'Canada', 'Canada'))
+                          country = c('США', 'США', 'США', 'Канада', 'Канада'))
 
 month_table <- data.frame(key = 1:12,
                           desc = c('Янв', 'Фев', 'Март', 'Апр', 'Май', 'Июнь', 
@@ -66,15 +66,15 @@ head(sales_fact)
 
 # Строим куб -------------------------------------------------------------------
 
-# агрегируем 
+# Строим куб: агрегируем выручку по измерениям 
 revenue_cube <- tapply(sales_fact$amount, sales_fact[, c('prod', 'month', 
                                                          'year', 'loc')], 
                        FUN = function(x){return(sum(x))})
 
-# Showing the cells of the cude
+# Просмотр ячеек куба
 revenue_cube
 
-# имена измерений
+# Имена измерений куба
 dimnames(revenue_cube)
 
 

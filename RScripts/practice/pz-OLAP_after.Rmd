@@ -1,0 +1,138 @@
+---
+title: "OLAP-инструменты R"
+author: "С.А.Суязова"
+date: '18 марта 2020 г '
+output: html_document
+---
+
+```{r setup, include = FALSE}
+# этот блок кода содержит стартовые настройки и не включается в отчёт 
+#  (опция include = FALSE)
+
+# загрузка пакетов
+library('knitr')      # для оформления таблиц
+
+# по умолчанию код R из блоков будет не виден в отчёте
+knitr::opts_chunk$set(echo = FALSE)
+
+# создаём переменную с ядром для генератора случайных чисел
+my.seed <- 123
+
+```
+
+Создадим OLAP-куб с продажами нескольких видов товара в ряде магазинов с известными местами расположения по месяцам и кварталам 2019 года. Данные по выручке от продаж товара генерируем случайным образом. Этот пример взят с сайта [dzone.com](https://dzone.com/articles/olap-operation-r).        
+
+```{r}
+# Создаём таблицы измерений ----------------------------------------------------
+
+state_table <- data.frame(key = c('CA', 'NY', 'WA', 'ON', 'QU'),
+                          name = c('Калифорния', 'Нью Йорк', 'Вашингтон', 
+                                   'Онтарио', 'Квебек'),
+                          country = c('США', 'США', 'США', 'Канада', 'Канада'))
+
+month_table <- data.frame(key = 1:12,
+                          desc = c('Янв', 'Фев', 'Март', 'Апр', 'Май', 'Июнь', 
+                                   'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'),
+                          quarter = c('Q1','Q1','Q1','Q2','Q2','Q2','Q3','Q3',
+                                      'Q3','Q4','Q4','Q4'))
+
+prod_table <- data.frame(key = c('Принтер', 'Планшет', 'Ноутбук'),
+                         price = c(225, 570, 1120))
+
+```
+
+Таблицы измерений для гиперкуба:   
+
+```{r}
+kable(state_table)
+
+kable(month_table)
+
+kable(prod_table)
+
+```
+
+```{r}
+# Функция для генерации таблицы транзакций
+gen_sales <- function(no_of_recs) {
+    
+    set.seed(my.seed)
+    # локация
+    loc <- sample(state_table$key, no_of_recs, 
+                  replace = T, prob = c(2, 2, 1, 1, 1))
+    # месяц
+    time_month <- sample(month_table$key, no_of_recs, replace = T)
+    # квартал
+    time_Q <- month_table[time_month, ]$quarter
+    # год
+    time_year <- sample(c(2018, 2019), no_of_recs, replace = T)
+    # товар
+    prod <- sample(prod_table$key, no_of_recs, replace = T, prob = c(1, 3, 2))
+    # количество
+    unit <- sample(c(1,2), no_of_recs, replace = T, prob = c(10, 3))
+    # стоимость (кол ичество * цену)
+    amount <- unit * prod_table[prod,]$price
+    
+    # объединяем в одну таблицу
+    sales <- data.frame(month = time_month, quarter = time_Q,
+                        year = time_year, loc = loc,
+                        prod = prod, unit = unit, amount = amount)
+    
+    # Сортировка таблицы по времени
+    sales <- sales[order(sales$year, sales$month),]
+    row.names(sales) <- NULL
+    return(sales)
+}
+
+# Генерируем данные
+sales_fact <- gen_sales(500)
+
+```
+
+Первые строки таблицы фактов: выручка (столбец amount) по периодам времени, локациям и товарам. Всего в таблице `r nrow(sales_fact)` строк и `r ncol(sales_fact)` столбцов.      
+
+```{r}
+# Первые несколько транзакций
+kable(head(sales_fact))
+
+```
+
+Построим гиперкуб и рассчитаем сводную таблицу: продажи ноутбуков по кварталам и локациям.    
+
+```{r, echo = T}
+# Строим куб -------------------------------------------------------------------
+
+# агрегируем выручку по измерениям, для времени используем кварталы (quarter) 
+revenue_cube <- tapply(sales_fact$amount, sales_fact[, c('prod', 'quarter', 
+                                                         'year', 'loc')], 
+                       FUN = function(x){return(sum(x))})
+
+# Pivot - Сводная таблица ------------------------------------------------------
+#  продажи ноутбуков по кварталам 2018 и локациям
+tbl <- apply(revenue_cube['Ноутбук', , '2018', ], c('quarter', 'loc'), 
+             FUN = function(x) {return(sum(x, na.rm = TRUE))})
+# отображение таблицы
+kable(tbl)
+
+```
+
+Теперь просуммируем продажи ноутбуков по годам и локациям.    
+
+```{r, echo = T}
+#  продажи ноутбуков по годам и локациям
+tbl <- apply(revenue_cube['Ноутбук', , , ], c('year', 'loc'), 
+             FUN = function(x) {return(sum(x, na.rm = TRUE))})
+# отображение таблицы
+kable(tbl)
+
+```
+
+Построим по последней сводной таблице график.   
+
+```{r, echo = T}
+barplot(as.matrix(tbl), beside = T, col = c('aquamarine3', 'coral'),
+        main = 'Продажи ноутбуков по локациям')
+legend('topright', fill = c('aquamarine3', 'coral'), legend = c(2018, 2019))
+
+```
+

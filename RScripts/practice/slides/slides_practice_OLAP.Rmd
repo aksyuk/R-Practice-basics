@@ -1,0 +1,279 @@
+---
+output:
+  xaringan::moon_reader:
+    css: ["./css/guu-slides-theme.css"]
+    seal: false
+    nature:
+      ratio: '16:9'
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+library('icon')
+
+# sourse of examples:
+#  https://swcarpentry.github.io/r-novice-inflammation
+```
+
+class: inverse, center, middle  
+background-image: url(./images/title_GERB-GUU_16-9.png)
+background-size: cover
+
+## OLAP-инструменты R
+
+### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
+
+15 марта 2020
+
+---
+
+## OLAP —   
+
+(англ. *online analytical processing*, интерактивная аналитическая обработка) — технология обработки данных, заключающаяся в подготовке суммарной (агрегированной) информации на основе больших массивов данных, структурированных по многомерному принципу.     
+
+
+.small[
+<div align = "right"><font face = "Courier New"><a href = "https://ru.wikipedia.org/wiki/OLAP">wiki</a></font></div>
+]
+
+Требования: **F**ast (Быстрый) **A**nalysis (Анализ) **S**hared (Разделяемой) **M**ultidimensional (Многомерной) **I**nformation (Информации)   
+
+.small[
+<div align = "right"><font face = "Courier New"><a href = "http://www.olap.ru/basic/alpero2i.asp">www.olap.ru</a></font></div>
+]
+
+---
+
+**OLAP-куб** потенциально содержит всю информацию, которая может потребоваться для ответов на любые запросы пользователя. *Пример трёхмерного куба*:     
+
+.center[
+<img src = "./slides_practice_OLAP_files/alpero2i2.gif"></img>  
+]
+
+- Показатель: суммы продаж    
+
+- Измерения: время, товар, магазин     
+
+- Уровни группировки: товары по категориям, магазины — по странам, время операций — по месяцам.   
+
+---
+
+.center[
+<img src = "./slides_practice_OLAP_files/pic-01.png"></img>  
+]
+
+---
+
+```{r, include = F}
+# Создаём таблицы измерений ----------------------------------------------------
+
+my.seed <- 123
+
+state_table <- data.frame(key = c('CA', 'NY', 'WA', 'ON', 'QU'),
+                          name = c('Калифорния', 'Нью Йорк', 'Вашингтон', 
+                                   'Онтарио', 'Квебек'),
+                          country = c('США', 'США', 'США', 'Канада', 'Канада'))
+
+month_table <- data.frame(key = 1:12,
+                          desc = c('Янв', 'Фев', 'Март', 'Апр', 'Май', 'Июнь', 
+                                   'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'),
+                          quarter = c('Q1','Q1','Q1','Q2','Q2','Q2','Q3','Q3',
+                                      'Q3','Q4','Q4','Q4'))
+
+prod_table <- data.frame(key = c('Принтер', 'Планшет', 'Ноутбук'),
+                         price = c(225, 570, 1120))
+
+# Функция для генерации таблицы транзакций
+gen_sales <- function(no_of_recs) {
+    
+    set.seed(my.seed)
+    # локация
+    loc <- sample(state_table$key, no_of_recs, 
+                  replace = T, prob = c(2, 2, 1, 1, 1))
+    # месяц
+    time_month <- sample(month_table$key, no_of_recs, replace = T)
+    # год
+    time_year <- sample(c(2018, 2019), no_of_recs, replace = T)
+    # товар
+    prod <- sample(prod_table$key, no_of_recs, replace = T, prob = c(1, 3, 2))
+    # количество
+    unit <- sample(c(1,2), no_of_recs, replace = T, prob = c(10, 3))
+    # стоимость (количество * цену)
+    amount <- unit*prod_table[prod,]$price
+    
+    # объединяем в одну таблицу
+    sales <- data.frame(month = time_month, year = time_year, loc = loc,
+                        prod = prod, unit = unit, amount = amount)
+    
+    # Сортировка таблицы по времени
+    sales <- sales[order(sales$year, sales$month),]
+    row.names(sales) <- NULL
+    return(sales)
+}
+
+# Генерируем данные
+sales_fact <- gen_sales(500)
+
+```
+
+```{r}
+# таблица измерений: расположения (Location)
+head(state_table, n = 3)
+
+# таблица измерений: товары (Product)
+head(prod_table, n = 3)
+
+```
+
+---
+
+```{r}
+# таблица измерений: время (Time)
+head(month_table, n = 3)
+
+# таблица фактов: продажи (Sales)
+head(sales_fact, n = 3)
+
+```
+
+---
+
+```{r, eval = F}
+# Строим куб: агрегируем выручку по измерениям 
+revenue_cube <- tapply(sales_fact$amount, 
+                       sales_fact[, c('prod', 'month', 
+                                      'year', 'loc')], 
+                       FUN = function(x){return(sum(x))})
+
+# Просмотр ячеек куба
+revenue_cube
+
+```
+
+.small[
+```{r, echo = F}
+# Строим куб: агрегируем выручку по измерениям 
+revenue_cube <- tapply(sales_fact$amount, 
+                       sales_fact[, c('prod', 'month', 
+                                      'year', 'loc')], 
+                       FUN = function(x){return(sum(x))})
+
+# Просмотр ячеек куба
+message(', , year = 2018, loc = CA')
+revenue_cube[, , 1, 1]
+message('<...>')
+```
+]
+
+---
+
+```{r}
+# Имена измерений куба
+dimnames(revenue_cube)    
+
+```
+
+---
+
+.center[
+<img src = "./slides_practice_OLAP_files/p2.png", height = 600></img>  
+]
+
+---
+
+**Операции с кубом: сделать срез**   
+
+```{r}
+#  срез по январю 2018
+revenue_cube[, '1', '2018', ]
+
+# срез по январю, планшеты 2018
+revenue_cube['Планшет', '1', '2018', ]
+
+```
+
+---
+
+**Операции с кубом: свернуть**   
+
+```{r}
+#  свернуть (просуммировать) по годам и товарам
+apply(revenue_cube, c('year', 'prod'), 
+      FUN = function(x) {return(sum(x, na.rm = TRUE))})
+```
+
+---
+
+**Операции с кубом: развернуть**   
+
+```{r, eval = F}
+#  развернуть
+apply(revenue_cube, c('year', 'month', 'prod'), 
+      FUN = function(x) {return(sum(x, na.rm = TRUE))})
+
+```
+
+.small[
+```{r, echo = F}
+#  развернуть
+apply(revenue_cube, c('year', 'month', 'prod'), 
+      FUN = function(x) {return(sum(x, na.rm = TRUE))})
+
+```
+]
+
+---
+
+**Операции с кубом: сводная таблица**   
+
+```{r, eval = F}
+#  продажи по годам и месяцам
+apply(revenue_cube, c('year', 'month'), 
+      FUN = function(x) {return(sum(x, na.rm = TRUE))})
+```
+
+.small[
+```{r, echo = F}
+#  продажи по годам и месяцам
+apply(revenue_cube, c('year', 'month'), 
+      FUN = function(x) {return(sum(x, na.rm = TRUE))})
+```
+]
+---
+
+**Операции с кубом: сводная таблица**   
+
+```{r}
+#  продажи по продуктам и локациям
+apply(revenue_cube, c('prod', 'loc'),
+      FUN = function(x) {return(sum(x, na.rm = TRUE))})
+```
+
+---
+
+### Интерактивные отчёты в `knitr`
+
+- Установить пакет `knitr`   
+
+- создать файл .Rmd: File -> New File -> R Markdown... (форматы отчёта: html, word, pdf)   
+
+- Блоки кода можно вставить сочетанием клавиш Shift + Alt + I    
+
+- В текстовую часть можно добавлять разметку на Markdown     
+
+- Нажать на кнопку "Knit" над окном редактирования скрипта   
+
+---
+
+### Практическая часть занятия  
+
+- Изучить код скриптов .R и .Rmd к этому занятию (выложены на сайте).   
+
+- Приступить к выполнению упражнений 10-11. Номер варианта - ваш номер в списке группы.   
+
+.center[
+<img src="./slides_practice_04_files/hubot.jpg" width="23%">
+<font size = "4px">image credit: octodex.github.com</font>
+]
