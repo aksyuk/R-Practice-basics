@@ -11,10 +11,9 @@ output:
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
 
-# library('icon')
-
 # sourse of examples:
 #  https://swcarpentry.github.io/r-novice-inflammation
+
 ```
 
 class: inverse, center, middle  
@@ -274,6 +273,6 @@ apply(revenue_cube, c('prod', 'loc'),
 - Приступить к выполнению упражнений 10-11. Номер варианта - ваш номер в списке группы.   
 
 .center[
-<img src="./slides_practice_04_files/hubot.jpg" width="23%">
+<img src="./slides_practice_OLAP_files/hubot.jpg" width="23%">
 <font size = "4px">image credit: octodex.github.com</font>
 ]
