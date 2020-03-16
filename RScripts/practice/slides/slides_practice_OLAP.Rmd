@@ -11,7 +11,7 @@ output:
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
 
-library('icon')
+# library('icon')
 
 # sourse of examples:
 #  https://swcarpentry.github.io/r-novice-inflammation
