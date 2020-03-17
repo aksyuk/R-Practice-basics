@@ -1,7 +1,7 @@
 ---
 output:
   xaringan::moon_reader:
-    css: ["./css/guu-slides-theme.css"]
+    css: ["../css/guu-slides-theme.css"]
     seal: false
     nature:
       ratio: '16:9'
@@ -17,14 +17,14 @@ options(htmltools.dir.version = FALSE)
 ```
 
 class: inverse, center, middle  
-background-image: url(./images/title_GERB-GUU_16-9.png)
+background-image: url(../images/title_GERB-GUU_16-9.png)
 background-size: cover
 
 ## OLAP-инструменты R
 
 ### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
 
-15 марта 2020
+18 марта 2020
 
 ---
 

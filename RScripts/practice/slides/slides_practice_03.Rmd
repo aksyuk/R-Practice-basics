@@ -1,7 +1,7 @@
 ---
 output:
   xaringan::moon_reader:
-    css: ["./css/guu-slides-theme.css"]
+    css: ["../css/guu-slides-theme.css"]
     seal: false
     nature:
       ratio: '16:9'
@@ -18,7 +18,7 @@ library('icon')
 ```
 
 class: inverse, center, middle  
-background-image: url(./images/title_GERB-GUU_16-9.png)
+background-image: url(../images/title_GERB-GUU_16-9.png)
 background-size: cover
 
 ## OLAP-инструменты R
@@ -60,7 +60,6 @@ background-size: cover
 
 
 `r fa_wrench(color = "#6C3483")` пишем свои собственные функции-методы или модифицируем существующие под свой класс (полиморфизм)        
-
 --
 
 `r fa_book(color = "#6C3483")` добавляем документацию и тесты     
