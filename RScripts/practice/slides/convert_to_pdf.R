@@ -13,7 +13,7 @@ library('xaringan')
 #                        browser = "/usr/bin/chromium-browser")
 
 # Windows
-pagedown::chrome_print("slides_practice_01_pmi.Rmd",
+pagedown::chrome_print("slides_practice_01_pmi.html",
                        browser = "C:\\Users\\sa_suyazova\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe")
 
 # # or just pass the HTML output file path to chrome_print()
