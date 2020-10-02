@@ -112,9 +112,9 @@ temp_to_celsius <- function(temp, temp_scale = 'F') {
 
 # Фрейм с температурой из прогноза погоды
 df_weather <- data.frame(city = c('Москва', 'Копенгаген', 'Томпсон'),
-                         temp = c(16, 11, 31),
+                         temp = c(13, 16, 35),
                          temp_scale = c('C', 'C', 'F'))
-df_weather
+df_weather     # температура сегодня
 
 # добавляем столбец с температурой по Цельсию
 df_weather$temp_C <- 
@@ -137,6 +137,7 @@ temp_to_celsius_bad <- function(temp) {
 # это глобальный temp_scale
 temp_scale <- 'C'
 # функция находит второй аргумент из глобального пространства имён
+#  но из-за этого возникает ошибка для города Томпсона
 temp_to_celsius_bad(df_weather$temp)
 
 # но если его не будет, получим ошибку

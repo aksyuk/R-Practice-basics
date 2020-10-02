@@ -426,6 +426,6 @@ dev.off()
 - Приступить к выполнению упражнений 5-7. Номер варианта - ваш номер в списке группы.   
 
 .center[
-<img src="./slides_practice_02_files/twenty-percent-cooler-octocat.png" width="23%">
+<img src="./slides_practice_02_pmi_files/twenty-percent-cooler-octocat.png" width="23%">
 <font size = "4px">image credit: krman009@github.com</font>
 ]

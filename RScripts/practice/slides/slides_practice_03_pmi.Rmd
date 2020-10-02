@@ -25,7 +25,7 @@ background-size: cover
 
 ### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
 
-2 октября 2019
+2 октября 2020
 
 ---
 
@@ -201,12 +201,12 @@ temp_to_celsius <- function(temp, temp_scale = 'F') {
 
 ```{r, include = F}
 df_weather <- data.frame(city = c('Москва', 'Копенгаген', 'Томпсон'),
-                         temp = c(16, 11, 31),
+                         temp = c(13, 16, 35),
                          temp_scale = c('C', 'C', 'F'))
 ```
 
 ```{r}
-df_weather
+df_weather     # температура сегодня
 
 df_weather$temp_C <- 
   temp_to_celsius(df_weather$temp, df_weather$temp_scale)
@@ -239,18 +239,19 @@ temp_to_celsius_bad <- function(temp) {
 ```{r}
 temp_scale <- 'C'  # это глобальный temp_scale
 
-temp_to_celsius_bad(df_weather$temp)
+temp_to_celsius_bad(df_weather$temp)  # ошибка для Томпсона
 
 ```
 
 ```{r, eval = F}
-temp_to_celsius_bad(temp)
+rm(temp_scale)    # если temp_scale убрать => ошибка
+temp_to_celsius_bad(df_weather$temp)
 
 ```
 
 .red[
 ```{r, echo = F}
-message("Error: object 'temp' not found")
+message("Error: object 'temp_scale' not found")
 
 ```
 ]
@@ -266,6 +267,7 @@ temp_to_celsius_bad2 <- function(temp, temp_scale = 'F') {
   output[temp_scale == 'F'] <- 
     fahrenheit_to_celsius(temp[temp_scale == 'F'])
   
+  # глобальное присваивание происходит незаметно
   df_weather$temp_C2 <<- output
   
   output
@@ -283,7 +285,7 @@ temp_to_celsius_bad2 <- function(temp, temp_scale = 'F') {
 
 # вызов функции без присваивания результата
 temp_to_celsius_bad2(df_weather$temp, df_weather$temp_scale)
-# тем не менее, фрейм изменился
+# тем не менее, фрейм изменился, и это не видно в коде
 df_weather
 
 ```
@@ -364,6 +366,8 @@ fileURL <- "https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/us
 eval(parse(fileURL, encoding = "UTF-8"))
 
 OutliersPlot(x, x.labels)
+
+"./slides_practice_03_pmi_files/"
 
 ```
 ]]
