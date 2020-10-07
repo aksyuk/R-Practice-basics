@@ -1,0 +1,112 @@
+---
+output:
+  xaringan::moon_reader:
+    css: ["../css/guu-slides-theme.css"]
+    seal: false
+    nature:
+      ratio: '16:9'
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+
+# library('icon')
+
+```
+
+class: inverse, center, middle  
+background-image: url(../images/title_GERB-GUU_16-9.png)
+background-size: cover
+
+## Практикум на ЭВМ 4
+
+### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
+
+7 октября 2020
+
+---
+
+### Популярные ошибки из первой практики   
+
+```{r}
+df <- data.frame(label = letters[1:5],
+                 var.1 = rnorm(12, 4, n = 5))
+
+# обращаемся к столбцу фрейма
+df$var.1
+
+# а вот это уже слишком
+df$var.1[1:5]
+
+```
+
+
+---
+
+### Популярные ошибки из первой практики   
+
+```{r, include = F}
+df.FGLab <- read.csv('../../manual_basics/FGLab.csv', stringsAsFactors = F,
+                     row.names = 1)
+
+```
+
+
+.small[
+```{r}
+df.FGLab    # фрейм с данными по сотрудникам лаборатории
+
+max(df.FGLab[df.FGLab$Пол == "жен", 'Рост'])     # ищем самую высокую женщину
+max(df.FGLab$Рост)
+
+```
+]
+
+
+---
+
+### Популярные ошибки из первой практики   
+
+```{r, include = F}
+df.FGLab <- read.csv('../../manual_basics/FGLab.csv', stringsAsFactors = F,
+                     row.names = 1)
+
+```
+
+
+.small[
+```{r}
+# ищем самую высокую женщину
+
+# фильтрация уже заложена в функции максимума
+df.FGLab[df.FGLab$Рост == max(df.FGLab[df.FGLab$Пол == "жен", 'Рост']), 'Имя']
+
+# ошибка из-за неверной фильтрации
+df.FGLab[df.FGLab$Рост == max(df.FGLab$Рост) & df.FGLab$Пол == 'жен', 'Имя']
+
+```
+]
+
+
+---
+
+### Популярные ошибки из первой практики   
+
+.small[
+```{r}
+# структура фрейма
+str(iris)
+
+```
+]
+
+Сколько наблюдений?   
+Сколько числовых переменных?   
+Сколько факторов?   
+
+
+---
+
+</br></br></br></br>
+<center><h1> Выполнение упражнений 5-9 </h1></center>
