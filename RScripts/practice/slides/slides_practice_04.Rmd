@@ -8,12 +8,11 @@ output:
       countIncrementalSlides: false
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
+
 options(htmltools.dir.version = FALSE)
 
-library('icon')
-
-# sourse of examples:
+# source of examples:
 #  https://swcarpentry.github.io/r-novice-inflammation
 
 # Загрузка библиотек
@@ -43,7 +42,7 @@ background-size: cover
 
 ### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
 
-23 октября 2019
+21 октября 2020
 
 ---
 
@@ -250,6 +249,7 @@ pairs(reg.df[, -1],     # фрейм без первого столбца-фак
 
 ##### С линиями регрессии
 
+.pull-left[
 .center[
 ```{r, echo = F}
 # source: https://stackoverflow.com/questions/49289258/how-to-draw-regression-line-instead-of-lowess-line-in-pairs-in-r  
@@ -276,7 +276,12 @@ pairs(reg.df[, -1], panel = panel.lm,
     font.labels = 2, lower.panel = panel.cor)
 
 ```
-]
+]]
+
+.pull-right[
+.small[
+Источник кода: <a href = "https://stackoverflow.com/questions/49289258/how-to-draw-regression-line-instead-of-lowess-line-in-pairs-in-r">stackoverflow.com</a>
+]]
 
 ---
 
