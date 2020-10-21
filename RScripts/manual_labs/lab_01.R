@@ -8,21 +8,21 @@
 #
 # версия R:
 # R.version
-#> _                           
-#> platform       x86_64-w64-mingw32          
-#> arch           x86_64                      
-#> os             mingw32                     
-#> system         x86_64, mingw32             
-#> status                                     
-#> major          3                           
-#> minor          6.0                         
-#> year           2019                        
-#> month          04                          
-#> day            26                          
-#> svn rev        76424                       
-#> language       R                           
-#> version.string R version 3.6.0 (2019-04-26)
-#> nickname       Planting of a Tree 
+# _                           
+# platform       x86_64-w64-mingw32          
+# arch           x86_64                      
+# os             mingw32                     
+# system         x86_64, mingw32             
+# status                                     
+# major          4                           
+# minor          0.0                         
+# year           2020                        
+# month          04                          
+# day            24                          
+# svn rev        78286                       
+# language       R                           
+# version.string R version 4.0.0 (2020-04-24)
+# nickname       Arbor Day 
 
 
 # Загрузка библиотек
@@ -38,13 +38,12 @@ library('nortest')        # для теста Андерсона-Дарлинг�
 dir()
 
 # импорт данных из .csv
-DF <- read.table('Пример_алкоголь-2011.csv',
-                 header = T,        # заголовок в первой строке
-                 dec = ',',         # разделитель целой и дробной части
-                 sep = ';',         # разделитель значений в строке
-                 row.names = 1,          # первый столбец – названия наблюдений
-                 as.is = T,              # не делать факторы
-                 na.strings = 'NA')      # символы пропущенных значений
+# file.path <- 'https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/RScripts/manual_labs/%D0%9F%D1%80%D0%B8%D0%BC%D0%B5%D1%80_%D0%B0%D0%BB%D0%BA%D0%BE%D0%B3%D0%BE%D0%BB%D1%8C-2011.csv'
+file.path <- './Пример_алкоголь-2011.csv'
+DF <- read.csv2(file.path,
+                row.names = 1,          # первый столбец – названия наблюдений
+                stringsAsFactors = F,   # не делать факторы
+                na.strings = 'NA')      # символы пропущенных значений
 
 # размерность фрейма
 dim(DF)
@@ -199,4 +198,4 @@ corrplot(matrix.cor,          # сама корреляционная матри
 rm(i, smm, coef.vars, sds, mns, matrix.cor, matrix.p, x)
 
 # сохраняем рабочее пространство в файл
-save.image('Пример_алкоголь.RData')
+save(list = c('DF', 'reg.df'), file = './Пример_алкоголь.RData')
