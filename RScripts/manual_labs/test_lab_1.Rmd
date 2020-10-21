@@ -1,0 +1,67 @@
+---
+title: "Пример к лабораторной 1"
+author: "Суязова С.А."
+date: "`r format(Sys.Date(), '%d, %B, %Y')`"
+output: word_document
+---
+
+```{r setup, include = FALSE}
+
+library('knitr')
+
+knitr::opts_chunk$set(echo = FALSE)
+
+```
+
+## Импорт данных
+
+```{r import}
+# импорт данных из .csv
+file.path <- 'https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/RScripts/manual_labs/%D0%9F%D1%80%D0%B8%D0%BC%D0%B5%D1%80_%D0%B0%D0%BB%D0%BA%D0%BE%D0%B3%D0%BE%D0%BB%D1%8C-2011.csv'
+# file.path <- './Пример_алкоголь-2011.csv'
+DF <- read.csv2(file.path, stringsAsFactors = F)
+
+```
+
+Файл с данными содержит `r nrow(DF)` строк и `r ncol(DF)` столбцов.   
+
+```{r}
+# делаем из столбца "FO" фактор
+DF$FO <- factor(DF$FO)
+    
+# оставляем только регионы и выбрасываем столбец меток, 
+#  чтобы удобнее было считать
+reg.df <- DF[DF$Reg.code < 1000, c(-1, -2)]
+# выбрасываем пропущенные
+reg.df <- na.omit(reg.df)
+
+```
+
+## Описательные статистики  
+
+
+```{r}
+# Ctrl + Alt + I -- вставка блока кода
+# ручной расчёт
+#  средние арифметические
+mns <- round(apply(reg.df[, -1], 2, mean), 1)
+
+#  стандартные отклонения
+sds <- round(apply(reg.df[, -1], 2, sd), 1)
+
+#  коэффициенты вариации
+coef.vars <- round(sds / mns * 100, 1)
+
+# делаем свою таблицу только с нужными статистиками 
+#  по количественным показателям: среднее, СКО, коэффициент вариации
+smm <- rbind(mns, sds, coef.vars)
+# названия статистик -- заголовки строк
+row.names(smm) <- c('Среднее', 'Стандартное отклонение',
+                    'Коэффициент вариации, %')
+
+kable(smm)
+
+```
+
+Вывод: показатели достаточно однородны (коэфф. вариации не превышают 40%).   
+
