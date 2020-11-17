@@ -90,13 +90,14 @@ corrplot(matrix.cor,          # сама корреляционная матри
 
 #### Оценка параметров модели
 
+.small[
 ```{r, eval = F}
-fit.1 <- lm(Retail.Vodka.2011.ps ~ Rural.2011 + 
-                Wage.ps.2011 + Injury.2011, 
+fit.1 <- lm(Retail.Vodka.2011.ps ~ Rural.2011 + Wage.ps.2011 + Injury.2011, 
             data = reg.df)
 summary(fit.1)
 
 ```
+]
 
 .small[
 ```{r, echo = F}
@@ -160,8 +161,7 @@ round(summary(fit.X1)$r.sq, 3)
 
 .small[
 ```{r, eval = F}
-fit.X1.fo <- lm(Retail.Vodka.2011.ps ~ Rural.2011 * FO, 
-                data = reg.df)
+fit.X1.fo <- lm(Retail.Vodka.2011.ps ~ Rural.2011 * FO, data = reg.df)
 round(summary(fit.X1.fo)$coef, 4) # таблица коэффициентов
 
 ```
@@ -241,25 +241,70 @@ message("R-sq = ", round(summary(fit.X2.fo)$r.sq, 3)) # R-квадрат
 ```
 ]
 
+$\alpha = 0.05$
+
+
+---
+
+#### ANOVA-тест для гнездовых моделей       
+
+Гнездовые модели имеют одинаковую зависимую и вложенные множества объясняющих переменных:   
+
+
+$\color{blue}Y = \beta_0 + \beta_1 * \color{blue}{X1} + \epsilon$ – усечённая  
+
+$\color{blue}Y = \beta_0 + \beta_1 * \color{blue}{X1} + \beta_2 * X2 + \{\beta_{REG}\} + \epsilon$ – полная  
+
+$SS^{РЕГР}_{\sum} = SS^{ОСТ}_{У} - SS^{ОСТ}_{П}$;      $F_{расч} = \frac {SS^{РЕГР}_{\sum} / r} {MS^{ОСТ}_П}$
+
+
+.small[
+$H_0:$ в полной модели коэфф-ты при добавочных объясняющих (кол-во = $r$) равны 0      
+]
+
+.small[
+$H_1:$ в полной модели хотя бы один из коэфф-тов при добавочных переменных не равен 0     
+]
+
+.small[
+<a href = "https://www.stat.ncsu.edu/people/bloomfield/courses/st370/Slides/MandR-ch12-sec02-06.pdf">источник</a>
+]
+
 ---
 
 #### Сравнение моделей  
 
-```{r}
+```{r, eval = F}
 # модели с фактором Rural.2011
 anova(fit.X1, fit.X1.fo)
 
 ```
 
+.small[
+```{r, echo = F}
+# модели с фактором Rural.2011
+anova(fit.X1, fit.X1.fo)
+
+```
+]
+
 ---
 
 #### Сравнение моделей  
 
-```{r}
+```{r, eval = F}
 # модели с фактором Injury.2011
 anova(fit.X2, fit.X2.fo)
 
 ```
+
+.small[
+```{r, echo = F}
+# модели с фактором Injury.2011
+anova(fit.X2, fit.X2.fo)
+
+```
+]
 
 ---
 
