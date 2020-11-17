@@ -4,7 +4,7 @@
 #  по дисциплине "Практикум на ЭВМ 4"
 #
 # Суязова (Аксюк) Светлана Андреевна s.a.askuk@gmail.com
-# версия скрипта: 1.0 (15.06.2019)
+# версия скрипта: 1.1 (17.11.2020)
 #
 # версия R:
 # R.version
@@ -14,15 +14,21 @@
 #> os             mingw32                     
 #> system         x86_64, mingw32             
 #> status                                     
-#> major          3                           
-#> minor          6.0                         
-#> year           2019                        
-#> month          04                          
-#> day            26                          
-#> svn rev        76424                       
+#> major          4                           
+#> minor          0.3                         
+#> year           2020                        
+#> month          10                          
+#> day            10                          
+#> svn rev        79318                       
 #> language       R                           
-#> version.string R version 3.6.0 (2019-04-26)
-#> nickname       Planting of a Tree 
+#> version.string R version 4.0.3 (2020-10-10)
+#> nickname       Bunny-Wunnies Freak Out
+
+
+
+# 0. Загрузка библиотек  -------------------------------------------------------
+
+library('stats')      # для функции p.adjust()
 
 
 
@@ -82,9 +88,15 @@ data.fit.X1.fo <- data.fit
 # функция с последовательным исключением незначимых регрессоров
 source('https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/removeFactorsByPValue.R')
 
-# применяем процедуру
+# применяем процедуру, сначала без поправок на p-значения
 fit.X1.fo <- removeFactorsByPValue(data = data.fit, 
                                    y.var.name = 'Retail.Vodka.2011.ps')
+summary(fit.X1.fo)
+
+# теперь с поправкой Бонферрони
+fit.X1.fo <- removeFactorsByPValue(data = data.fit, 
+                                   y.var.name = 'Retail.Vodka.2011.ps',
+                                   p.adj.method = 'bonferroni')
 summary(fit.X1.fo)
 
 # строим ПЛР на второй по силе корреляции фактор
@@ -109,9 +121,24 @@ tail(data.fit)
 data.fit.X2.fo <- data.fit
 
 # доводим до значимости с помощью пользовательской функции
+# без поправки
 fit.X2.fo <- removeFactorsByPValue(data = data.fit, 
                                    y.var.name = 'Retail.Vodka.2011.ps')
 summary(fit.X2.fo)
+
+# с поправкой
+fit.X2.fo <- removeFactorsByPValue(data = data.fit, 
+                                   y.var.name = 'Retail.Vodka.2011.ps',
+                                   p.adj.method = 'bonferroni')
+summary(fit.X2.fo)
+
+# с поправкой, и повышаем уровень значимости
+fit.X2.fo <- removeFactorsByPValue(data = data.fit, 
+                                   y.var.name = 'Retail.Vodka.2011.ps',
+                                   p.adj.method = 'bonferroni',
+                                   alpha = 0.10)
+summary(fit.X2.fo)
+
 
 
 # 3. Сравнение моделей  --------------------------------------------------------
@@ -122,7 +149,7 @@ anova(fit.X1, fit.X1.fo)
 # модели с фактором Injury.2011
 anova(fit.X2, fit.X2.fo)
 
-# основные характеристики качества апроксимации
+# основные характеристики качества аппроксимации
 str(summary(fit.X1))
 # скорректированный R-квадрат
 summary(fit.X1)$adj.r.squared
@@ -154,11 +181,8 @@ for (i in 1:length(models.list)) {
 }
 df.goodness.of.fit
 
-# Сохранение нужных объектов рабочего пространства для следующей лабораторной ==
-# убираем промежуточные объекты
-rm(i, df.goodness.of.fit, data.fit, X.matrix, 
-   fit.1, fit.2, fit.X1, fit.X2, fit.X1.fo, fit.X2.fo, SKFO.coef, SZFO.coef,
-   removeFactorsByPValue)
 
-# 4. Сохранение рабочего пространства  -----------------------------------------
-save.image('Пример_алкоголь_модели.RData')
+
+# 4. Сохранение нужных объектов рабочего пространства  -------------------------
+save(list = c('data.fit.X1.fo', 'data.fit.X2.fo', 'DF', 'reg.df'), 
+     file = 'Пример_алкоголь_модели.RData')

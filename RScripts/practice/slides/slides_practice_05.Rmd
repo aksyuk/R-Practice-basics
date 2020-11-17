@@ -176,6 +176,30 @@ round(summary(fit.X1.fo)$coef, 4) # таблица коэффициентов
 
 ---
 
+#### Проблема множественной проверки гипотез на одной выборке   
+
+Вероятность ошибки первого рода в одном сравнении: $P = \alpha = 0.05$   
+
+Вероятность ошибки хотя бы в одной из $m$ проверок гипотез: $P = 1 - (1 - \alpha)^m$    
+
+При $n = 4$: $P = 1 - (1 - 0.05)^{4} = `r format(round(1 - (1 - 0.05)^4, 2), nsmall = 2)`$    
+
+При $n = 10$: $P = 1 - (1 - 0.05)^{10} = `r format(round(1 - (1 - 0.05)^10, 2), nsmall = 2)`$    
+
+При $n = 100$: $P = 1 - (1 - 0.05)^{100} = `r format(round(1 - (1 - 0.05)^100, 2), nsmall = 2)`$    
+
+---
+
+#### Возможные решения проблемы    
+
+1. Игнорировать проверку по P-значениям: процедуры отбора регрессоров с помощью информационных критериев, типа $AIC$, $BIC$ (функция R `step()`)    
+
+2. Корректировать P-значения: процедуры корректировки p-значений методами Бонферрони, Холма — Бонферрони, Шидака и т.д. Принцип: поправка, которая увеличивает p-значения с увеличением количества проверок (функция R `p.adjust()`).    
+
+Источники: <a href = "r-analytics.blogspot.com/2013/10/blog-post.html#.XMmD0MszY5k">r-analytics.blogspot.com</a>; <a href = "http://www.ievbras.ru/ecostat/Kiril/R/Biblio_N/R_Eng/Bretz2011.pdf">Taylor and Francis Group, Multiple Comparisons Using R, 2011</a>
+
+---
+
 .small[
 ```{r}
 # создаём фрейм со всеми переменными-факторами (создаём фиктивные)
@@ -192,20 +216,22 @@ head(data.fit[, 1:12])
 
 ---
 
-#### Функция исключения незначимых регрессоров 
+#### Функция исключения незначимых регрессоров  
 
+.small[
 ```{r, eval = F}
 # функция с последовательным исключением незначимых регрессоров
 source('https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/removeFactorsByPValue.R')
-
+# по умолчанию без поправки на P-значения
 fit.X1.fo <- removeFactorsByPValue(data = data.fit, 
                     y.var.name = 'Retail.Vodka.2011.ps')
 
 ```
+]
 
 ```{r, echo = F}
 source('https://raw.githubusercontent.com/aksyuk/R-Practice-basics/master/user_functions/removeFactorsByPValue.R')
-
+# по умолчанию без поправки на P-значения
 fit.X1.fo <- removeFactorsByPValue(data = data.fit, 
                     y.var.name = 'Retail.Vodka.2011.ps')
 round(summary(fit.X1.fo)$coef, 4) # таблица коэффициентов
@@ -215,7 +241,66 @@ message("R-sq = ", round(summary(fit.X1.fo)$r.sq, 3)) # R-квадрат
 
 ---
 
-#### ПЛР с переменной структурой на второй по силе корреляции фактор (модель `fit.X2.fo`)   
+```{r, echo = F}
+fit.all <- lm(Retail.Vodka.2011.ps ~ ., data = data.fit)
+
+```
+
+P-значения модели со всеми регрессорами, без поправки (9&nbsp;первых параметров из `r nrow(summary(fit.all)$coef)`):    
+
+.small[
+```{r}
+fit.all <- lm(Retail.Vodka.2011.ps ~ ., data = data.fit)
+round(summary(fit.all)$coef[, 4], 4)[1:9]
+  
+```
+]
+
+C поправкой Бонферрони ( $P-значение \cdot m$ ):    
+
+.small[
+```{r}
+p.adjust(round(summary(fit.all)$coef[, 4], 4), method = 'bonferroni')[1:9]
+  
+```
+]
+
+---
+
+Модель с поправкой может совпасть с моделью без поправки:   
+
+.small[
+```{r, eval = F}
+# с поправкой Бонферрони
+fit.X1.fo <- removeFactorsByPValue(data = data.fit, 
+                    y.var.name = 'Retail.Vodka.2011.ps',
+                    p.adj.method = 'bonferroni')
+tbl <- round(summary(fit.X1.fo)$coef, 4) # таблица коэффициентов
+tbl[-1, 4] <- p.adjust(tbl[-1, 4], method = 'bonferroni')
+tbl
+
+```
+]
+
+```{r, echo = F}
+# с поправкой Бонферрони
+fit.X1.fo <- removeFactorsByPValue(data = data.fit, 
+                    y.var.name = 'Retail.Vodka.2011.ps',
+                    p.adj.method = 'bonferroni')
+tbl <- round(summary(fit.X1.fo)$coef, 4) # таблица коэффициентов
+tbl[-1, 4] <- p.adjust(tbl[-1, 4], method = 'bonferroni')
+tbl
+
+```
+
+```{r, echo = F}
+message("R-sq = ", round(summary(fit.X1.fo)$r.sq, 3)) # R-квадрат
+
+```
+
+---
+
+ПЛР с переменной структурой на второй по силе корреляции фактор (модель `fit.X2.fo`), без поправки   
 
 ```{r, echo = F}
 # строим ПЛР на второй по силе корреляции фактор
@@ -241,8 +326,74 @@ message("R-sq = ", round(summary(fit.X2.fo)$r.sq, 3)) # R-квадрат
 ```
 ]
 
-$\alpha = 0.05$
+---
 
+ПЛР с переменной структурой на второй по силе корреляции фактор (модель `fit.X2.fo.adj`), с поправкой   
+
+```{r, echo = F}
+# строим ПЛР на второй по силе корреляции фактор
+fit.X2 <- lm(Retail.Vodka.2011.ps ~ Injury.2011, 
+             data = reg.df)
+
+# создаём фрейм со всеми переменными-факторами (создаём фиктивные)
+X.matrix <- model.matrix(Retail.Vodka.2011.ps ~ Injury.2011 * FO, data = reg.df)
+data.fit <- cbind(Retail.Vodka.2011.ps = reg.df$Retail.Vodka.2011.ps, 
+                  data.frame(X.matrix)[, -1])
+
+# доводим до значимости с помощью пользовательской функции
+fit.X2.fo.adj <- removeFactorsByPValue(data = data.fit, 
+                                       y.var.name = 'Retail.Vodka.2011.ps',
+                                       p.adj.method = 'bonferroni')
+tbl <- round(summary(fit.X2.fo.adj)$coef, 4) # таблица коэффициентов
+tbl[-1, 4] <- p.adjust(tbl[-1, 4], method = 'bonferroni')
+
+```
+
+.small[
+```{r, echo = F}
+tbl
+message("R-sq = ", round(summary(fit.X2.fo.adj)$r.sq, 3)) # R-квадрат
+
+```
+]
+
+Что делать?   
+
+1. Повысить уровень значимости.   
+
+2. Уменьшить количество фиктивных переменных в модели с переменной структурой.   
+
+---
+
+ПЛР с переменной структурой на второй по силе корреляции фактор (модель `fit.X2.fo.adj`), с поправкой и $\alpha = 0.10$   
+
+```{r, echo = F}
+# строим ПЛР на второй по силе корреляции фактор
+fit.X2 <- lm(Retail.Vodka.2011.ps ~ Injury.2011, 
+             data = reg.df)
+
+# создаём фрейм со всеми переменными-факторами (создаём фиктивные)
+X.matrix <- model.matrix(Retail.Vodka.2011.ps ~ Injury.2011 * FO, data = reg.df)
+data.fit <- cbind(Retail.Vodka.2011.ps = reg.df$Retail.Vodka.2011.ps, 
+                  data.frame(X.matrix)[, -1])
+
+# доводим до значимости с помощью пользовательской функции
+fit.X2.fo.adj <- removeFactorsByPValue(data = data.fit, 
+                                       y.var.name = 'Retail.Vodka.2011.ps',
+                                       p.adj.method = 'bonferroni', 
+                                       alpha = 0.10)
+tbl <- round(summary(fit.X2.fo.adj)$coef, 4) # таблица коэффициентов
+tbl[-1, 4] <- p.adjust(tbl[-1, 4], method = 'bonferroni')
+
+```
+
+.small[
+```{r, echo = F}
+tbl
+message("R-sq = ", round(summary(fit.X2.fo.adj)$r.sq, 3)) # R-квадрат
+
+```
+]
 
 ---
 
@@ -267,7 +418,7 @@ $H_1:$ в полной модели хотя бы один из коэфф-то�
 ]
 
 .small[
-<a href = "https://www.stat.ncsu.edu/people/bloomfield/courses/st370/Slides/MandR-ch12-sec02-06.pdf">источник</a>
+Источник: <a href = "https://www.stat.ncsu.edu/people/bloomfield/courses/st370/Slides/MandR-ch12-sec02-06.pdf">statistics.sciences.ncsu.edu</a>
 ]
 
 ---
@@ -343,7 +494,9 @@ message(paste0("mean(Y) = ", round(mean(reg.df$Retail.Vodka.2011.ps), 1)))
 
 ### Практическая часть занятия  
 
-- Прочитать указания к первой лабораторной работе повторить код примеров. <a href = "github.com/aksyuk/R-Practice-basics/tree/master/RScripts/manual_labs">github.com/aksyuk/R-Practice-basics/tree/master/RScripts/manual_labs</a>   
+- Повторить код примера: <a href = "https://github.com/aksyuk/R-Practice-basics/blob/master/RScripts/manual_labs/lab_02.R">lab_02.R</a>.
+
+- Прочитать указания к лабораторной №2: <a href = "https://github.com/aksyuk/R-Practice-basics/blob/master/RScripts/manual_labs/TASK_lab_02.md">TASK_lab_02.md</a>   
 
 - Приступить к выполнению упр. 11 и лабораторной №2. 
 
