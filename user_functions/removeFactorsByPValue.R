@@ -13,7 +13,7 @@
 #  * p.adjust.method - метод для поправки на множественную проверку гипотез:
 #                       возможные значения из аргумента method функции p.adjust 
 #                       из пакета stats (?p.adjust.methods). По умолчанию 
-#                       используется поправка Бонферрони
+#                       'none', т.е. без поправки.
 # 
 # Возвращаемое значение: регрессионая модель, возвращаемая функцией lm().
 #
@@ -26,7 +26,7 @@
 library('stats')      # для функции p.adjust()
 
 removeFactorsByPValue <- function (data, y.var.name, alpha = 0.05,
-                                   p.adjust.method = 'bonferroni'){
+                                   p.adj.method = 'none'){
     # модель на всех факторах
     fit.result <- lm(as.formula(paste(y.var.name, ' ~ .', sep = '')), 
                                 data = data)
@@ -49,7 +49,7 @@ removeFactorsByPValue <- function (data, y.var.name, alpha = 0.05,
         # обновляем вектор p-значений для параметров модели
         p.v <- summary(fit.result)$coef[-1, 4]
         # делаем поправку на множественную проверку гипотез
-        p.v <- p.adjust(p.v, method = p.adjust.method)
+        p.v <- p.adjust(p.v, method = p.adj.method)
     }
     # возвращаем окончательную модель
     return(fit.result)
