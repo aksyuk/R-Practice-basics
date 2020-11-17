@@ -34,7 +34,7 @@ removeFactorsByPValue <- function (data, y.var.name, alpha = 0.05,
     # сразу выбрасываем константу
     p.v <- summary(fit.result)$coef[-1, 4]
     # делаем поправку на множественную проверку гипотез
-    p.v <- p.adjust(p.v, method = p.adjust.method)
+    p.v <- p.adjust(p.v, method = p.adj.method)
     
     # доводим до состояния значимости всех параметров
     # останавливаемся, когда все p-значения меньше уровня значимости
