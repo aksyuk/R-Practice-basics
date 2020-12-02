@@ -3,8 +3,8 @@
 #  "Тесты остатков"
 #  по дисциплине "Практикум на ЭВМ 4"
 #
-# Суязова (Аксюк) Светлана Андреевна s.a.askuk@gmail.com
-# версия скрипта: 1.0 (15.06.2019)
+# Суязова (Аксюк) Светлана Андреевна s.a.aksuk@gmail.com
+# версия скрипта: 1.1 (01.12.2020)
 #
 # версия R:
 # R.version
@@ -14,22 +14,22 @@
 #> os             mingw32                     
 #> system         x86_64, mingw32             
 #> status                                     
-#> major          3                           
-#> minor          6.0                         
-#> year           2019                        
-#> month          04                          
-#> day            26                          
-#> svn rev        76424                       
+#> major          4                           
+#> minor          0.3                         
+#> year           2020                        
+#> month          10                          
+#> day            10                          
+#> svn rev        79318                       
 #> language       R                           
-#> version.string R version 3.6.0 (2019-04-26)
-#> nickname       Planting of a Tree 
+#> version.string R version 4.0.3 (2020-10-10)
+#> nickname       Bunny-Wunnies Freak Out 
 
 
 # Загрузка библиотек
 library('lmtest')     # тесты остатков: bptest(), dwtest()
 library('broom')      # трансформации данных: augment()
 library('car')        # тест на мультиколинеарность: vif()
-library('sandwich')   # оценки модели с попракой на гетероскедастичность: vcovHC()
+library('sandwich')   # оценки модели с поправкой на гетероскедастичность: vcovHC()
 
 
 
@@ -75,18 +75,20 @@ DF[rownames(DF) %in% c(8, 72), c('Label', 'FO')]
 # работаем с четвёртой моделью
 # найдём расстояния Кука для влияющих регионов
 h <- augment(models.list[[4]], reg.df)
-rownames(h) <- rownames(reg.df)
 lev <- h[rownames(reg.df) %in% c(8, 72), '.cooksd', drop = F]
 
-# критическая граница F-распределения
+# медианное F-значение - порог для отсечения влияющих
 n <- nrow(reg.df)
-k <- nrow(summary(models.list[[4]])$coeff)
-f.tabl <- qf(1 - 0.05, df1 = k, df2 = n - k)
+p <- nrow(summary(fit.X2.fo)$coeff) - 1
+f.median <- qf(1 - 0.5, df1 = p, df2 = n - p)
+# порог = 1
+cut.1 <- 1
+# порог = 4 / n
+cut.4.n <- round(4 / nrow(reg.df), 2)
 
-# сравниваем расчётные значения с критической границей
-cbind(leverage = round(lev, 2), 
-      f.tabl = round(f.tabl, 2), 
-      p.val = round(pf(lev$.cooksd, df1 = k, df2 = n - k), 4))
+# сравниваем расчётные значения с порогами
+cbind(leverage = round(lev,2), f.median = round(f.median,2),
+      cut.1, cut.4.n)
 
 
 
@@ -96,6 +98,21 @@ cbind(leverage = round(lev, 2),
 i <- 4
 # t-тест для среднего
 t.test(models.list[[i]]$residuals, mu = 0, alternative = 'two.sided')
+
+
+
+# 3. Проверка постоянства среднего остатков ------------------------------------
+
+# номер модели
+i <- 4
+# первая половина остатков
+res.s1 <- fit.X2.fo$residuals[1:(n / 2)]
+
+# вторая половина остатков
+res.s2 <- fit.X2.fo$residuals[(n / 2):n]
+
+# t-тест для равенства средних
+t.test(res.s1, res.s2, alternative = 'two.sided')
 
 
 
@@ -133,10 +150,17 @@ beta.vector <- beta.vector[beta.vector != 0]
 #  значим, выводим p-значение и степень.
 #  для моделей 1-2 X: Rural.2011; для моделей 3-4 X: Injury.2011
 for (j in 1:length(beta.vector)) {
-    gl.test <- lm(abs(.resid) ~ I(Injury.2011^beta.vector[j]), data = h)
+    gl.test <- lm(abs(.std.resid) ~ I(Injury.2011^beta.vector[j]), data = h)
     if (summary(gl.test)$coef[2, 4] < 0.05) {
-        print(paste('beta =', beta.vector[j], 
-                    'p-value =', round(summary(gl.test)$coef[2, 4], 4)))
+        # если найдена значимая модель по тесту Глейзера,
+        #  появится сообщение в консоли
+        message(paste0('! >>> Модель значима >>> ', 
+                      'beta = ', round(beta.vector[j], 2), 
+                      'p-value = ', round(summary(gl.test)$coef[2, 4], 4)))
+    } else {
+        # если модель незначима, тоже пишем в консоль
+        message(paste0('Модель для beta = ', round(beta.vector[j], 2), 
+                       ' незначима'))
     }
 }
 
@@ -170,11 +194,13 @@ coeftest(models.list[[i]])
 # vcovHAC(): оценка ковариационной матриц, устойчивая к гетероскедастичности
 #  и автокорреляции
 coeftest(models.list[[i]], vcov. = vcovHAC(models.list[[i]])) # гетероскедастичность и автокорреляция
+# NB: сами оценки параметров не меняются,
+#  меняются их стандартные ошибки, и выводы по значимости могут измениться
 
 
 
 # 7. Обнаружение мультиколлинеарности  -----------------------------------------
 
 # VIF-тест на мультиколлинеарность факторов 
-#  (ПРИМЕНЯЕТСЯ ДЛЯ МНОЖЕСТВЕННОЙ РЕГРЕССИИ С НЕПРЕРЫВНЫМИ ФАКТОРАМИ)
+#  NB: применяется для множественной регрессии с непрерывными факторами
 round(vif(models.list[[2]]), 2)

@@ -35,7 +35,7 @@ background-size: cover
 
 ### Светлана Андреевна Суязова (Аксюк) </br> [s.aksuk@kiber-guu.ru](mailto:s.aksuk@kiber-guu.ru)  
 
-27 ноября 2019
+2 декабря 2020
 
 ---
 
@@ -47,32 +47,96 @@ background-size: cover
 
 ---
 
+**Остатки vs модельные** – первый график диагностики
+
+.center[
+![Остатки vs модельные](./slides_practice_06_files/diagnostics1.jpeg)
+]
+
+.small[
+<a href="https://data.library.virginia.edu/diagnostic-plots/">Источник</a>
+]
+
+---
+
+**Квантиль-квантиль** – второй график диагностики
+
+.center[
+![Остатки vs модельные](./slides_practice_06_files/diagnostics2.jpeg)
+]
+
+.small[
+<a href="https://data.library.virginia.edu/diagnostic-plots/">Источник</a>
+]
+
+---
+
+**Стандартизованные остатки vs модельные** – третий график
+
+.center[
+![Остатки vs модельные](./slides_practice_06_files/diagnostics3.jpeg)
+]
+
+.small[
+<a href="https://data.library.virginia.edu/diagnostic-plots/">Источник</a>
+]
+
+---
+
+**Остатки vs влияние** – пятый график диагностики
+
+.center[
+![Остатки vs модельные](./slides_practice_06_files/diagnostics5.jpeg)
+]
+
+.small[
+<a href="https://data.library.virginia.edu/diagnostic-plots/">Источник</a>
+]
+
+---
+
+#### Виды влияющих наблюдений   
+
+.center[
+![Остатки vs модельные](./slides_practice_06_files/pic-01.png)
+]
+
+*(a)* искажает константу модели, увеличивает ошибку;   
+
+*(b)* искажает коэффициент модели, увеличивает ошибку;   
+
+*(c)* неаномально по модели.     
+
+---
+
 ##### Пример на данных по потреблению алкоголя
 
 .small[
 ```{r, echo = F}
 # фрейм с характеристиками четырёх моделей
 df.goodness.of.fit <- data.frame(Модель = names(models.list),
-                                 Формула = rep('', length(models.list)),
-                                       R.2.скорр = 0,
-                                       F.расч = 0,
-                                       Станд.Ошибка = 0)
-df.goodness.of.fit$Формула <- as.character(df.goodness.of.fit$Формула)
+                      Формула = rep('', length(models.list)),
+                      R.2.скорр = 0, F.расч = 0, Станд.Ошибка = 0,
+                      stringsAsFactors = F)
 
 for (i in 1:length(models.list)) {
     alphas <- summary(models.list[[i]])$coef
     signs <- rep('+', nrow(summary(models.list[[i]])$coef))
     signs[summary(models.list[[i]])$coef[, 1] < 0] <- ''
     signs <- signs[-1]
-    nwln <- rep(c('', '\\\\'), nrow(summary(models.list[[i]])$coef) / 2)
+    
+    if (length(signs) > 1) {
+        nwln <- rep(c('', '\\\\'), 
+                    nrow(summary(models.list[[i]])$coef) / 2)
+    } else {
+       nwln <- ''
+    }
 
     df.goodness.of.fit[i, 'Формула'] <-
-        paste0('.small[ $Y = ', round(summary(models.list[[i]])$coef[, 1][1], 2),
-               paste0(signs, round(summary(models.list[[i]])$coef[, 1][-1], 2),
-                      ' \\cdot ', rownames(summary(models.list[[i]])$coef)[-1],
-                      nwln,
-                      collapse = ''),
-               '$ ]')
+        paste0('.small[ $Y = ', 
+               round(summary(models.list[[i]])$coef[, 1][1], 2),
+               paste0(signs, round(summary(models.list[[i]])$coef[, 1][-1], 2), ' \\cdot ', rownames(summary(models.list[[i]])$coef)[-1],
+                      nwln, collapse = ''), '$ ]')
 }
 
 for (i in 1:length(models.list)) {
@@ -166,7 +230,7 @@ dev.off()
 
 ---
 
-### Разброс шкалированных остатков    
+### Разброс стандартизованных остатков    
 
 .pull-left[
 .small[
@@ -208,6 +272,17 @@ dev.off()
 plot(fit.X2.fo, 4)
 
 ```
+
+$Cook.d_i = \frac{\sum_{j=1}^n{(\hat{Y}_j - \hat{Y}_{j(i)}})^2} {p \cdot MSE},$
+</br>
+где $\hat{Y}_j$ – прогнозы по всей выборке; $\hat{Y}_{j(i)}$ – прогнозы по модели, построенной по выборке без $i$-го наблюдения; $p$ – количество параметров модели.   
+
+<a href="http://www.machinelearning.ru/wiki/index.php?title=%D0%A0%D0%B0%D1%81%D1%81%D1%82%D0%BE%D1%8F%D0%BD%D0%B8%D0%B5_%D0%9A%D1%83%D0%BA%D0%B0">Источник</a>
+
+Эвристики для отбора влияющих: </br> 1) $Cook.d_i > 1$; 2) $Cook.d_i > 4/n$; </br>3) $Cook.d_i > F_{0.5}(p, n-p)$.  
+
+<a href="https://en.wikipedia.org/wiki/Cook%27s_distance">Источник</a>
+
 ]]
 
 .pull-right[
@@ -266,7 +341,7 @@ dev.off()
 
 ---
 
-#### Влияющие наблюдения   
+#### Считаем статистики для наблюдений     
 
 ```{r, warning = F}
 h <- augment(fit.X2.fo, reg.df)
@@ -284,15 +359,16 @@ lev <- h[rownames(reg.df) %in% c(8, 72),
 #### Влияющие наблюдения   
 
 ```{r, warning = F}
-# критическая граница F-распределения
+# медианное F-значение - порог для отсечения влияющих
 n <- nrow(reg.df)
-k <- nrow(summary(fit.X2.fo)$coeff)
-f.tabl <- qf(1 - 0.05, df1 = k, df2 = n - k)
+p <- nrow(summary(fit.X2.fo)$coeff) - 1
+f.median <- qf(1 - 0.5, df1 = p, df2 = n - p)
+cut.1 <- 1  # порог = 1
+cut.4.n <- round(4 / nrow(reg.df), 2)  # порог = 4 / n
 
-# сравниваем расчётные значения 
-#  с критической границей
-cbind(leverage = round(lev, 2), f.tabl = round(f.tabl, 2), 
-  p.val = round(pf(lev$.cooksd, df1 = k, df2 = n - k), 4))
+# сравниваем расчётные значения с порогами
+cbind(leverage=round(lev,2), f.median=round(f.median,2),
+      cut.1, cut.4.n)
 
 ```
 
@@ -303,6 +379,25 @@ cbind(leverage = round(lev, 2), f.tabl = round(f.tabl, 2),
 ```{r}
 # t-тест для среднего
 t.test(fit.X2.fo$residuals, mu=0, alternative='two.sided')
+
+```
+
+---
+
+#### Проверка на постоянство среднего остатков    
+
+```{r}
+# первая половина остатков
+res.s1 <- fit.X2.fo$residuals[1:(n / 2)]
+
+# вторая половина остатков
+res.s2 <- fit.X2.fo$residuals[(n / 2):n]
+  
+# t-тест для равенства средних
+t.t <- t.test(res.s1, res.s2, alternative = 'two.sided')
+res <- c(t.t$statistic, t.t$p.value)
+names(res) <- c('t.расч', 'P-значение')
+round(res, 4)
 
 ```
 
@@ -330,7 +425,9 @@ dwtest(fit.X2.fo, alternative = 'two.sided')
 
 ### Практическая часть занятия  
 
-- Прочитать указания к первой лабораторной работе повторить код примеров. <a href = "github.com/aksyuk/R-Practice-basics/tree/master/RScripts/manual_labs">github.com/aksyuk/R-Practice-basics/tree/master/RScripts/manual_labs</a>   
+- Повторить код примера: <a href = "https://github.com/aksyuk/R-Practice-basics/blob/master/RScripts/manual_labs/lab_03.R">lab_03.R</a>.
+
+- Прочитать указания к лабораторной №3: <a href = "https://github.com/aksyuk/R-Practice-basics/blob/master/RScripts/manual_labs/TASK_lab_03.md">TASK_lab_03.md</a>   
 
 - Приступить к выполнению упр. 12 и лабораторной №3. 
 
