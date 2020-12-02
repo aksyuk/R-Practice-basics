@@ -98,7 +98,7 @@ background-size: cover
 #### Виды влияющих наблюдений   
 
 .center[
-![Остатки vs модельные](./slides_practice_06_files/pic-01.png)
+![Влияющие](./slides_practice_06_files/pic-01.PNG)
 ]
 
 *(a)* искажает константу модели, увеличивает ошибку;   
