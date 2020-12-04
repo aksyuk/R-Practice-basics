@@ -138,7 +138,8 @@ bptest(models.list[[i]], data = h,
 
 
 # тест Голдфельда-Квандта ======================================================
-gqtest(models.list[[i]], order.by = ~ Injury.2011, data = h, fraction = 0.2)
+gqtest(models.list[[i]], order.by = ~ Injury.2011, 
+       data = h, fraction = 0.2)
 
 
 # Тест Глейзера ================================================================
