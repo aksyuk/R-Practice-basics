@@ -40,7 +40,7 @@ removeFactorsByPValue <- function (data, y.var.name, alpha = 0.05,
     # останавливаемся, когда все p-значения меньше уровня значимости
     while (sum(p.v >= alpha) > 0) {
         # находим наименее значимый фактор (max p-значение)
-        x.to.remove <- names(p.v)[p.v == max(p.v)]
+        x.to.remove <- names(p.v)[p.v == max(p.v)][1]
         # выкидываем его из фрейма с исходными данными
         data <- data[, !(colnames(data) %in% x.to.remove)]
         # перестраиваем модель регрессии
