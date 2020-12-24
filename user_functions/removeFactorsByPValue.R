@@ -25,8 +25,8 @@
 
 library('stats')      # для функции p.adjust()
 
-removeFactorsByPValue <- function (data, y.var.name, alpha = 0.05,
-                                   p.adj.method = 'none'){
+removeFactorsByPValue <- function(data, y.var.name, alpha = 0.05,
+                                   p.adj.method = 'none') {
     # модель на всех факторах
     fit.result <- lm(as.formula(paste(y.var.name, ' ~ .', sep = '')), 
                                 data = data)
@@ -39,6 +39,13 @@ removeFactorsByPValue <- function (data, y.var.name, alpha = 0.05,
     # доводим до состояния значимости всех параметров
     # останавливаемся, когда все p-значения меньше уровня значимости
     while (sum(p.v >= alpha) > 0) {
+        
+        if (length(p.v) == 1) {
+            # остался единственный фактор, и он незначим
+            message('Все объясняющие переменные незначимы \n Возвращаю исходную модель')
+            return(fit.result)
+        }
+        
         # находим наименее значимый фактор (max p-значение)
         x.to.remove <- names(p.v)[p.v == max(p.v)][1]
         # выкидываем его из фрейма с исходными данными
