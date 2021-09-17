@@ -12,7 +12,7 @@ output:
 options(htmltools.dir.version = FALSE)
 
 # devtools::install_github("ropenscilabs/icon")
-library('icon')
+library('icons')
 
 ```
 
